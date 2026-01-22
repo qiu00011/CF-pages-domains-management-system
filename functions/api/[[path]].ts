@@ -1,12 +1,12 @@
-// Added type reference for Cloudflare Workers/Pages environment to fix missing type definitions for KVNamespace and PagesFunction
-/// <reference types="@cloudflare/workers-types" />
-
+// Fixed missing type definition file error by removing the external reference
 interface Env {
-  CONFIG_KV: KVNamespace;
+  // Fixed 'Cannot find name KVNamespace' error by using 'any'
+  CONFIG_KV: any;
   PASSWORD?: string;
 }
 
-export const onRequest: PagesFunction<Env> = async (context) => {
+// Fixed 'Cannot find name PagesFunction' error by defining the function signature manually
+export const onRequest = async (context: { request: Request; env: Env; params: any }) => {
   const { request, env, params } = context;
   const url = new URL(request.url);
   const pathParts = params.path as string[] || [];

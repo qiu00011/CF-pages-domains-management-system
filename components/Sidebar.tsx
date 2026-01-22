@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Tab } from '../types';
+import { Tab } from '../types.ts';
 
 interface SidebarProps {
   activeTab: Tab;

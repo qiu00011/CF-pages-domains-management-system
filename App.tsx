@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { UserConfig, Tab } from './types';
-import Sidebar from './components/Sidebar';
-import DomainManager from './components/DomainManager';
-import SubdomainGenerator from './components/SubdomainGenerator';
-import Settings from './components/Settings';
-import Login from './components/Login';
+import { UserConfig, Tab } from './types.ts';
+import Sidebar from './components/Sidebar.tsx';
+import DomainManager from './components/DomainManager.tsx';
+import SubdomainGenerator from './components/SubdomainGenerator.tsx';
+import Settings from './components/Settings.tsx';
+import Login from './components/Login.tsx';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);

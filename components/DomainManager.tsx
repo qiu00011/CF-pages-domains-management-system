@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserConfig, ProjectInfo, DomainInfo } from '../types';
+import { UserConfig, ProjectInfo, DomainInfo } from '../types.ts';
 
 interface DomainManagerProps {
   config: UserConfig;

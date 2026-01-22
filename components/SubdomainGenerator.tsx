@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserConfig } from '../types';
+import { UserConfig } from '../types.ts';
 
 interface SubdomainGeneratorProps {
   config: UserConfig;
