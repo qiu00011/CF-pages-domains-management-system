@@ -1,0 +1,5 @@
+{
+  "name": "Cloudflare Pages & Subdomain Hub",
+  "description": "A comprehensive control panel for managing Cloudflare Pages custom domains and generating date-based random subdomains with a sleek, modern UI.",
+  "requestFramePermissions": []
+}
