@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { UserConfig, Tab } from './types.ts';
-import Sidebar from './components/Sidebar.tsx';
-import DomainManager from './components/DomainManager.tsx';
-import SubdomainGenerator from './components/SubdomainGenerator.tsx';
-import Settings from './components/Settings.tsx';
-import Login from './components/Login.tsx';
+import { UserConfig, Tab } from './types';
+import Sidebar from './components/Sidebar';
+import DomainManager from './components/DomainManager';
+import SubdomainGenerator from './components/SubdomainGenerator';
+import Settings from './components/Settings';
+import Login from './components/Login';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -22,13 +22,14 @@ const App: React.FC = () => {
   const fetchConfig = useCallback(async () => {
     try {
       const resp = await fetch('/api/config');
-      if (!resp.ok) throw new Error('Network response was not ok');
-      const data = await resp.json();
-      if (data.success && data.config) {
-        setConfig(data.config);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.success && data.config) {
+          setConfig(data.config);
+        }
       }
     } catch (err) {
-      console.warn("无法加载配置，可能尚未初始化", err);
+      console.warn("未检测到预设配置");
     }
   }, []);
 
@@ -53,7 +54,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden animate-fade-in relative z-10 max-md:flex-col">
+    <div className="flex h-screen w-screen overflow-hidden animate-fade-in relative z-10 max-md:flex-col font-bold">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 

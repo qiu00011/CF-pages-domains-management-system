@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserConfig, ProjectInfo, DomainInfo } from '../types.ts';
+import { UserConfig, ProjectInfo, DomainInfo } from '../types';
 
 interface DomainManagerProps {
   config: UserConfig;
@@ -119,7 +119,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   useEffect(() => { if (selectedProject) fetchDomains(selectedProject); }, [selectedProject]);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in font-bold">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-3xl font-black dark:text-white tracking-tighter">域名控制</h2>
@@ -191,18 +191,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
                 </button>
               </div>
             ))}
-            {domains.length === 0 && !loading && (
-              <div className="flex-1 flex items-center justify-center text-slate-400 font-bold italic text-sm">暂无绑定解析</div>
-            )}
           </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-4">系统吞吐流水</label>
-        <div className="bg-black/90 text-emerald-400 p-8 rounded-[40px] text-[11px] h-48 overflow-y-auto shadow-2xl border border-white/5 custom-scroll leading-relaxed font-bold">
-          {logs.map((log, i) => <div key={i} className="mb-1.5 opacity-80"><span className="text-slate-600 mr-2">»</span>{log}</div>)}
-          {logs.length === 0 && <div className="text-slate-800 italic">SYSTEM IDLE...</div>}
         </div>
       </div>
     </div>

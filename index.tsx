@@ -1,14 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 
-console.log("🚀 [子怡云] 核心系统正在挂载...");
+console.log("🚀 [子怡云] 核心系统已启动，正在应用雅黑字体...");
 
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
   root.render(<App />);
-  console.log("✅ [子怡云] 渲染指令已发出，雅黑字体就绪");
-} else {
-  console.error("❌ [子怡云] 找不到挂载点 #root");
 }
