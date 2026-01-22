@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-console.log("🚀 [子怡云] 核心系统已启动，正在应用雅黑字体...");
+console.log("🚀 [子怡云] 核心系统已启动");
 
 const container = document.getElementById('root');
 if (container) {

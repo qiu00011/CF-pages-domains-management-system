@@ -8,7 +8,7 @@
     <style>
         /* 强制全局使用微软雅黑，确保系统一致性 */
         :root {
-            --ui-font: "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, sans-serif;
+            --ui-font: "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         * {
@@ -59,9 +59,9 @@
 </head>
 <body class="bg-slate-50">
     <div id="root">
-        <!-- 仅在 React 未能接管页面时显示的占位符 -->
-        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold; color:#94a3b8; font-size:14px;">
-            正在加载系统资源...
+        <!-- 如果 React 成功挂载，此内容会被替换 -->
+        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold; color:#64748b; font-family:sans-serif;">
+            系统正在启动，请稍候...
         </div>
     </div>
 </body>

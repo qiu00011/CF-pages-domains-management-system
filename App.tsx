@@ -54,7 +54,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden animate-fade-in relative z-10 max-md:flex-col font-bold">
+    <div className="flex h-screen w-screen overflow-hidden animate-fade-in relative z-10 max-md:flex-col">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
