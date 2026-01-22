@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface LoginProps {
@@ -46,7 +45,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         />
         
         <div className="space-y-3">
-          <h2 className="text-3xl font-black text-white tracking-tight">子怡vpn面板</h2>
+          <h2 className="text-3xl font-black text-white tracking-tight">子怡云</h2>
           <p className="text-slate-400 text-sm font-medium opacity-70">云端调度 实时控制系统</p>
         </div>
 

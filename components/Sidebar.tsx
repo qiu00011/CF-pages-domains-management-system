@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tab } from '../types.ts';
 
@@ -25,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDarkMode, 
           className="w-12 h-12 rounded-2xl shadow-xl rotate-3 object-cover border-2 border-white/50" 
         />
         <div className="flex flex-col">
-          <h1 className="font-black text-xl dark:text-white tracking-tighter leading-none">子怡VPN</h1>
+          <h1 className="font-black text-xl dark:text-white tracking-tighter leading-none">子怡云</h1>
           <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1 opacity-60">Admin Panel</span>
         </div>
       </div>

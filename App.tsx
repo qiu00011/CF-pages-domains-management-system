@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserConfig, Tab } from './types.ts';
 import Sidebar from './components/Sidebar.tsx';
@@ -97,7 +96,7 @@ const App: React.FC = () => {
       <header className="md:hidden flex items-center justify-between p-4 px-6 glass rounded-b-[24px] border-none shadow-lg">
         <div className="flex items-center gap-3">
           <img src="https://image.hyeri.us.kg/icon.png" className="w-8 h-8 rounded-xl object-cover" alt="Logo" />
-          <h1 className="font-black text-slate-800 dark:text-white tracking-tight">子怡vpn面板</h1>
+          <h1 className="font-black text-slate-800 dark:text-white tracking-tight">子怡云</h1>
         </div>
         <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-lg">
           {isDarkMode ? '🌙' : '☀️'}

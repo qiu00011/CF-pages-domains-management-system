@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 
-console.log("⚛️ 子怡vpn面板 引擎已就绪，正在挂载...");
+console.log("⚛️ 子怡云 引擎已就绪，正在挂载...");
 
 const mount = () => {
   const container = document.getElementById('root');
