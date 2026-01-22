@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserConfig, ProjectInfo, DomainInfo } from '../types';
+import { UserConfig, ProjectInfo, DomainInfo } from '../types.ts';
 
 interface DomainManagerProps {
   config: UserConfig;
@@ -14,7 +14,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const [logs, setLogs] = useState<string[]>([]);
 
   const addLog = (msg: string) => {
-    setLogs(prev => [...prev.slice(-50), `[${new Date().toLocaleTimeString()}] ${msg}`]);
+    setLogs(prev => [...prev.slice(-20), `[${new Date().toLocaleTimeString()}] ${msg}`]);
   };
 
   const fetchProjects = async () => {
@@ -43,7 +43,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const fetchDomains = async (projName: string) => {
     if (!projName) return;
     setLoading(true);
-    addLog(`正在读取项目 [${projName}] 的解析列表...`);
+    addLog(`读取项目 [${projName}] 绑定列表...`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${projName}/domains`, {
         headers: { 'X-Pages-Token': config.pagesToken, 'X-Account-Id': config.accountId }
@@ -51,7 +51,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       const data = await resp.json();
       if (data.success) {
         setDomains(data.result);
-        addLog("列表同步成功");
+        addLog("列表刷新成功");
       }
     } catch (err) {
       addLog(`拉取域名失败: ${err}`);
@@ -63,7 +63,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const addDomain = async () => {
     if (!newDomain || !selectedProject) return;
     setLoading(true);
-    addLog(`准备执行绑定: ${newDomain}`);
+    addLog(`开始绑定: ${newDomain}`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains`, {
         method: 'POST',
@@ -77,11 +77,11 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       });
       const data = await resp.json();
       if (data.success) {
-        addLog(`✅ 解析绑定任务已完成`);
+        addLog(`✅ 域名绑定任务成功`);
         setNewDomain('');
         fetchDomains(selectedProject);
       } else {
-        addLog(`❌ 绑定失败: ${data.errors?.[0]?.message || 'API 请求被拒'}`);
+        addLog(`❌ 绑定失败: ${data.errors?.[0]?.message || '未知错误'}`);
       }
     } catch (err) {
       addLog(`⚠️ 异常中断: ${err}`);
@@ -93,7 +93,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const removeDomain = async (domainName: string) => {
     if (!confirm(`确定要移除 ${domainName} 吗？`)) return;
     setLoading(true);
-    addLog(`正在申请注销解析: ${domainName}`);
+    addLog(`解绑域名: ${domainName}`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains/${domainName}`, {
         method: 'DELETE',
@@ -105,7 +105,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       });
       const data = await resp.json();
       if (data.success) {
-        addLog(`✅ 域名已从 Pages 项目中移除`);
+        addLog(`✅ 域名已移除`);
         fetchDomains(selectedProject);
       }
     } catch (err) {
@@ -119,78 +119,88 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   useEffect(() => { if (selectedProject) fetchDomains(selectedProject); }, [selectedProject]);
 
   return (
-    <div className="space-y-8 animate-fade-in font-bold">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-3xl font-black dark:text-white tracking-tighter">域名控制</h2>
-          <p className="text-slate-500 text-sm font-bold opacity-70">Cloudflare Pages 调度核心</p>
-        </div>
-        <button 
-          onClick={fetchProjects}
-          className="px-6 py-3 bg-white/50 dark:bg-white/10 rounded-2xl text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest border border-white/20 shadow-sm"
-        >
-          刷新云端状态
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">当前操作项目</label>
-            <div className="relative">
-                <select 
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-bold text-base shadow-inner appearance-none"
-                value={selectedProject}
-                onChange={(e) => setSelectedProject(e.target.value)}
-                >
-                {projects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">▼</div>
-            </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">当前 Pages 项目</label>
+            <select 
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 font-bold text-sm outline-none focus:ring-2 ring-blue-500/20"
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+            >
+              {projects.length === 0 && <option>加载中...</option>}
+              {projects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+            </select>
           </div>
 
-          <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">下发绑定指令</label>
-            <div className="flex gap-4">
-              <input 
-                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-bold text-lg shadow-inner focus:ring-4 ring-blue-500/10 transition-all"
-                placeholder="v2.example.com"
-                value={newDomain}
-                onChange={(e) => setNewDomain(e.target.value)}
-              />
-              <button 
-                onClick={addDomain}
-                disabled={loading || !newDomain}
-                className="bg-blue-600 text-white px-8 rounded-2xl font-black hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
-              >
-                立即绑定
-              </button>
-            </div>
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">新增绑定域名</label>
+            <input 
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 font-bold text-sm outline-none focus:ring-2 ring-blue-500/20 mb-4"
+              placeholder="v2.domain.com"
+              value={newDomain}
+              onChange={(e) => setNewDomain(e.target.value)}
+            />
+            <button 
+              onClick={addDomain}
+              disabled={loading || !newDomain}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 transition-all"
+            >
+              确认添加
+            </button>
+          </div>
+
+          <div className="bg-slate-900 text-slate-400 p-4 rounded-xl text-[10px] font-mono leading-relaxed h-48 overflow-y-auto custom-scroll">
+             <div className="text-slate-500 border-b border-slate-800 pb-1 mb-2 uppercase font-black tracking-widest">系统日志</div>
+             {logs.map((log, i) => <div key={i} className="mb-1">{log}</div>)}
+             {logs.length === 0 && <div className="italic">等待操作...</div>}
           </div>
         </div>
 
-        <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 min-h-[350px] flex flex-col shadow-sm">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 pl-1">活跃解析列表</label>
-          <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scroll">
-            {domains.map(d => (
-              <div key={d.name} className="flex items-center justify-between p-6 bg-white/80 dark:bg-black/40 rounded-[32px] border border-slate-100 dark:border-white/5 shadow-sm group hover:border-blue-500/40 transition-all">
-                <div className="flex flex-col">
-                  <span className="font-bold text-base dark:text-white tracking-tight">{d.name}</span>
-                  <div className="flex items-center gap-2 mt-1.5">
-                      <span className={`w-2 h-2 rounded-full ${d.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-orange-400 animate-pulse'}`}></span>
-                      <span className={`text-[9px] uppercase font-black tracking-widest ${d.status === 'active' ? 'text-emerald-500' : 'text-orange-400'}`}>
-                        {d.status === 'active' ? 'ACTIVE' : 'VALIDATING'}
-                      </span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => removeDomain(d.name)}
-                  className="text-red-400 hover:text-red-600 p-4 rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  REMOVE
-                </button>
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">已绑定域名列表</span>
+            <button onClick={() => fetchDomains(selectedProject)} className="text-blue-500 text-[10px] font-black hover:underline uppercase">刷新列表</button>
+          </div>
+          <div className="flex-1 overflow-y-auto min-h-[500px]">
+            {domains.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+                <span className="text-4xl mb-4 opacity-20">📭</span>
+                <p className="text-xs font-bold">暂无绑定域名</p>
               </div>
-            ))}
+            )}
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50/50 dark:bg-slate-800/30">
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">域名地址</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 text-center">状态</th>
+                  <th className="px-6 py-3 border-b border-slate-100 dark:border-slate-800"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                {domains.map(d => (
+                  <tr key={d.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-sm dark:text-slate-200">{d.name}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${
+                        d.status === 'active' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30'
+                      }`}>
+                        {d.status === 'active' ? 'Active' : 'Pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                        onClick={() => removeDomain(d.name)}
+                        className="text-red-500 hover:text-red-700 text-xs font-bold transition-colors"
+                      >
+                        移除
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

@@ -8,19 +8,29 @@
     <style>
         :root {
             --primary: #2563eb;
-            --bg: #f1f5f9;
+            --sidebar-bg: #1e293b;
+            --main-bg: #f8fafc;
+        }
+        * {
+            font-family: "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
         body {
             margin: 0;
-            background-color: var(--bg);
-            font-family: "Microsoft YaHei", -apple-system, sans-serif;
+            background-color: var(--main-bg);
             color: #1e293b;
         }
-        .animate-in {
-            animation: fadeIn 0.3s ease-out;
+        /* 经典面板阴影与圆角 */
+        .panel-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -38,11 +48,10 @@
 </head>
 <body>
     <div id="root">
-        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#64748b;">
-            正在载入系统资源...
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f1f5f9;">
+            <div style="font-size: 24px; font-weight: bold; color: #1e293b; margin-bottom: 10px;">子怡云</div>
+            <div style="color: #64748b; font-size: 14px;">正在载入系统资源，请稍候...</div>
         </div>
     </div>
-    <!-- 必须明确指向入口文件，并使用 type="module" -->
-    <script type="module" src="./index.tsx"></script>
 </body>
 </html>

@@ -54,7 +54,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-slate-100 dark:bg-slate-950 overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -62,8 +62,19 @@ const App: React.FC = () => {
         toggleDarkMode={() => setIsDarkMode(!isDarkMode)} 
       />
       
-      <main className="flex-1 overflow-y-auto p-6 animate-in">
-        <div className="max-w-6xl mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 min-h-[calc(100vh-3rem)]">
+      <main className="flex-1 overflow-y-auto">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-10">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+            {activeTab === Tab.Domains && '自定义域名管理'}
+            {activeTab === Tab.Generator && '随机域名分发'}
+            {activeTab === Tab.Settings && '系统配置中心'}
+          </h2>
+          <div className="flex items-center gap-4">
+             <span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full uppercase">Cloudflare Online</span>
+          </div>
+        </header>
+
+        <div className="p-8 max-w-7xl mx-auto animate-fade-in">
           {activeTab === Tab.Domains && <DomainManager config={config} />}
           {activeTab === Tab.Generator && <SubdomainGenerator config={config} />}
           {activeTab === Tab.Settings && <Settings config={config} setConfig={setConfig} />}
@@ -72,12 +83,12 @@ const App: React.FC = () => {
 
       {config.backgroundUrl && (
         config.backgroundUrl.endsWith('.mp4') ? (
-          <video autoPlay loop muted className="fixed inset-0 -z-10 w-full h-full object-cover opacity-10">
+          <video autoPlay loop muted className="fixed inset-0 -z-10 w-full h-full object-cover opacity-5 pointer-events-none">
             <source src={config.backgroundUrl} type="video/mp4" />
           </video>
         ) : (
           <div 
-            className="fixed inset-0 -z-10 bg-cover bg-center opacity-10"
+            className="fixed inset-0 -z-10 bg-cover bg-center opacity-5 pointer-events-none"
             style={{ backgroundImage: `url(${config.backgroundUrl})` }}
           />
         )
