@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { UserConfig } from '../types.ts';
+import { UserConfig } from '../types';
 
 interface SubdomainGeneratorProps {
   config: UserConfig;
@@ -27,20 +26,17 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
     const month = parts[0].padStart(2, "0");
     const day = parts[1].padStart(2, "0");
 
-    // 逻辑：随机2位 + MM + 随机2位 + DD + 随机2位
     const prefix = randomLetters(2) + month + randomLetters(2) + day + randomLetters(2);
     const parent = config.parentDomain || 'hyeri.top';
     const fullSubdomain = `${prefix}.${parent}`;
     
-    // 初始化结果，第一个始终是子域名
     const newResults: Array<{ label: string, value: string }> = [
       { label: '生成的随机子域名', value: fullSubdomain }
     ];
 
-    // 检测配置中心有几个路径（U1, U2...），就生成几个对应的 URL
     if (config.paths && config.paths.length > 0) {
       config.paths.forEach(p => {
-        const pathSuffix = p.value.trim() || p.label; // 如果路径没填，默认用标签名
+        const pathSuffix = p.value.trim() || p.label;
         newResults.push({
           label: `订阅地址 (${p.label})`,
           value: `https://${fullSubdomain}/${pathSuffix}`
@@ -58,9 +54,9 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-10 py-6 animate-fade-in">
+    <div className="max-w-2xl mx-auto space-y-10 py-6 animate-fade-in font-bold">
       <div className="text-center space-y-3">
-        <h2 className="text-4xl font-black dark:text-white tracking-tight">随机域名分发</h2>
+        <h2 className="text-4xl font-black dark:text-white tracking-tight uppercase">随机域名分发</h2>
         <p className="text-slate-500 font-medium italic">基于日期算法自动化生成的访问地址</p>
       </div>
 
@@ -68,7 +64,7 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
         <div className="flex items-center justify-between p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-3xl border border-blue-100/50 dark:border-blue-800/20">
           <div className="flex flex-col">
             <span className="text-[10px] font-black text-blue-800 dark:text-blue-300 uppercase tracking-widest">分发根域名</span>
-            <span className="font-tech text-lg text-blue-600 dark:text-blue-400 font-black tracking-tight">{config.parentDomain || '未在配置中心设置'}</span>
+            <span className="text-lg text-blue-600 dark:text-blue-400 font-black tracking-tight">{config.parentDomain || '未在配置中心设置'}</span>
           </div>
           <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner">🌐</div>
         </div>
@@ -77,7 +73,7 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
           <label className="block text-sm font-black text-slate-700 dark:text-slate-300 pl-2 uppercase tracking-wider">输入分发日期 (MM.DD)</label>
           <div className="flex gap-4">
             <input 
-              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[24px] px-6 py-5 outline-none text-2xl font-tech dark:text-white focus:ring-4 ring-blue-500/20 transition-all placeholder:opacity-30"
+              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[24px] px-6 py-5 outline-none text-2xl dark:text-white focus:ring-4 ring-blue-500/20 transition-all placeholder:opacity-30 font-bold"
               placeholder="例如 03.15"
               value={dateStr}
               onChange={(e) => setDateStr(e.target.value)}
@@ -103,7 +99,7 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
                 <div key={i} className="group p-5 bg-white/80 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-[28px] flex items-center justify-between hover:border-blue-400/50 transition-all shadow-sm">
                   <div className="flex flex-col gap-1 overflow-hidden pr-4">
                     <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{res.label}</span>
-                    <span className="text-base font-tech truncate dark:text-slate-100 font-medium tracking-tight">{res.value}</span>
+                    <span className="text-base truncate dark:text-slate-100 font-bold tracking-tight">{res.value}</span>
                   </div>
                   <button 
                     onClick={() => copyToClipboard(res.value)}
