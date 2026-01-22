@@ -201,7 +201,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       <div className="space-y-4">
         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-4">系统吞吐流水</label>
         <div className="bg-black/90 text-emerald-400 p-8 rounded-[40px] text-[11px] h-48 overflow-y-auto shadow-2xl border border-white/5 custom-scroll leading-relaxed font-bold">
-          {logs.map((log, i) => <div key={i} className="mb-1.5 opacity-80 font-tech"><span className="text-slate-600 mr-2">»</span>{log}</div>)}
+          {logs.map((log, i) => <div key={i} className="mb-1.5 opacity-80"><span className="text-slate-600 mr-2">»</span>{log}</div>)}
           {logs.length === 0 && <div className="text-slate-800 italic">SYSTEM IDLE...</div>}
         </div>
       </div>
