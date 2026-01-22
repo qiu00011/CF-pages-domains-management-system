@@ -148,7 +148,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
                 >
-                {projects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                {projects.map(p => <option key={p.name} value={p.name} className="font-tech">{p.name}</option>)}
                 </select>
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">▼</div>
             </div>
@@ -204,7 +204,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-4">Trace Terminal</label>
         <div className="bg-black/90 text-emerald-400 p-8 rounded-[40px] font-tech text-[11px] h-48 overflow-y-auto shadow-2xl border border-white/5 custom-scroll leading-relaxed">
           {logs.map((log, i) => <div key={i} className="mb-1.5 opacity-80"><span className="text-slate-600 mr-2">»</span>{log}</div>)}
-          {logs.length === 0 && <div className="text-slate-800 italic">SYSTEM IDLE...</div>}
+          {logs.length === 0 && <div className="text-slate-800 italic font-tech">SYSTEM IDLE...</div>}
         </div>
       </div>
     </div>
