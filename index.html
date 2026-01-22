@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN" class="antialiased">
 <head>
@@ -7,9 +6,9 @@
     <title>子怡vpn面板 - 综合管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 统一使用 Apple 系统字体栈，确保中西文排版优雅 */
+        /* 极致简约的 Apple 系统字体栈，确保在任何 Apple 设备上拥有原生高级感 */
         :root {
-            --apple-font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --apple-font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", "Inter", "Microsoft YaHei", sans-serif;
         }
 
         body { 
@@ -19,54 +18,65 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
+            background-color: #f8fafc;
         }
 
-        /* 重置技术类字体为 Apple 字体，仅通过加粗或字间距区分数据，不再使用 Mono */
+        /* 针对域名和数字，不再使用 Mono 字体，改为加粗和略微紧凑的字间距来模拟“技术感” */
         .font-tech {
             font-family: var(--apple-font) !important;
-            font-weight: 600;
-            letter-spacing: -0.01em;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(25px) saturate(200%);
-            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
+        
         .dark .glass {
-            background: rgba(25, 25, 25, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         #custom-bg-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -10;
             object-fit: cover;
-            transition: opacity 1.5s ease;
+            transition: opacity 1.2s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .dark .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
         
         input, select, button {
             font-family: inherit;
         }
     </style>
     <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@^19.2.3",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-        "react/": "https://esm.sh/react@^19.2.3/"
-      }
-    }
-    </script>
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
 </head>
 <body class="bg-slate-50 text-slate-900 transition-colors duration-500">
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <!-- 尝试移除路径前的 ./ 以匹配某些环境的模块解析逻辑 -->
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>
