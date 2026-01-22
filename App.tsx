@@ -6,10 +6,13 @@ import SubdomainGenerator from './components/SubdomainGenerator.tsx';
 import Settings from './components/Settings.tsx';
 import Login from './components/Login.tsx';
 
+const APP_LOGO = "https://image.hyeri.us.kg/icon.png";
+const APP_NAME = "子怡vpn面板";
+
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<Tab>(Tab.Domains);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [config, setConfig] = useState<UserConfig>({
     accountId: '',
     pagesToken: '',
@@ -29,7 +32,7 @@ const App: React.FC = () => {
         }
       }
     } catch (err) {
-      console.warn("未检测到预设配置");
+      console.warn("未检测到云端配置");
     }
   }, []);
 
@@ -41,59 +44,75 @@ const App: React.FC = () => {
     }
   }, [fetchConfig]);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    
+    // 动态背景处理
+    const oldBg = document.getElementById('custom-bg-layer');
+    if (oldBg) oldBg.remove();
+
+    if (config.backgroundUrl) {
+      const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(config.backgroundUrl);
+      const el = document.createElement(isVideo ? 'video' : 'img');
+      el.id = 'custom-bg-layer';
+      el.src = config.backgroundUrl;
+      el.style.opacity = '0';
+      if (isVideo) {
+        (el as HTMLVideoElement).autoplay = true;
+        (el as HTMLVideoElement).loop = true;
+        (el as HTMLVideoElement).muted = true;
+        (el as HTMLVideoElement).playsInline = true;
+      }
+      document.body.appendChild(el);
+      setTimeout(() => el.style.opacity = '1', 50);
+    }
+  }, [isDarkMode, config.backgroundUrl]);
+
   if (!isAuthenticated) {
     return <Login onLoginSuccess={() => { setIsAuthenticated(true); fetchConfig(); }} />;
   }
 
   return (
-    <div className={`flex h-screen overflow-hidden ${isDarkMode ? 'dark bg-slate-950' : 'bg-slate-50'}`}>
+    <div className="flex h-screen w-screen overflow-hidden relative z-10 p-4 max-md:p-3 max-md:flex-col">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         isDarkMode={isDarkMode} 
-        toggleDarkMode={() => setIsDarkMode(!isDarkMode)} 
+        toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        logo={APP_LOGO}
+        name={APP_NAME}
       />
       
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">
-              {activeTab === Tab.Domains && '🌐'}
-              {activeTab === Tab.Generator && '✨'}
-              {activeTab === Tab.Settings && '⚙️'}
-            </span>
-            <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-              {activeTab === Tab.Domains && '自定义域名管理'}
-              {activeTab === Tab.Generator && '随机域名分发'}
-              {activeTab === Tab.Settings && '系统配置中心'}
-            </h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full">
-              CF API 已连接
-            </div>
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-6xl mx-auto">
-            {activeTab === Tab.Domains && <DomainManager config={config} />}
-            {activeTab === Tab.Generator && <SubdomainGenerator config={config} />}
-            {activeTab === Tab.Settings && <Settings config={config} setConfig={setConfig} />}
-          </div>
+      <main className="flex-1 overflow-y-auto p-10 max-md:p-6 max-md:pb-28 glass rounded-[36px] shadow-2xl relative border-white/20 custom-scroll">
+        <div className="max-w-6xl mx-auto animate-fade-in">
+          {activeTab === Tab.Domains && <DomainManager config={config} />}
+          {activeTab === Tab.Generator && <SubdomainGenerator config={config} />}
+          {activeTab === Tab.Settings && <Settings config={config} setConfig={setConfig} />}
         </div>
       </main>
 
-      {config.backgroundUrl && (
-        <div className="fixed inset-0 -z-10 pointer-events-none opacity-[0.03]">
-          {config.backgroundUrl.endsWith('.mp4') ? (
-            <video autoPlay loop muted className="w-full h-full object-cover">
-              <source src={config.backgroundUrl} type="video/mp4" />
-            </video>
-          ) : (
-            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${config.backgroundUrl})` }} />
-          )}
-        </div>
+      {/* 移动端底部导航 */}
+      <div className="md:hidden fixed bottom-6 left-6 right-6 z-50 glass rounded-[28px] p-2 flex justify-around shadow-2xl border-white/20">
+        {[
+          { id: Tab.Domains, label: '域名', icon: '🌐' },
+          { id: Tab.Generator, label: '生成', icon: '✨' },
+          { id: Tab.Settings, label: '配置', icon: '⚙️' }
+        ].map(t => (
+          <button 
+            key={t.id}
+            onClick={() => setActiveTab(t.id)} 
+            className={`flex flex-col items-center justify-center gap-1 w-full py-3 transition-all ${
+              activeTab === t.id ? 'text-blue-500 transform -translate-y-1' : 'text-slate-400 opacity-60'
+            }`}
+          >
+            <span className="text-xl">{t.icon}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest">{t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {!config.backgroundUrl && (
+        <div className="fixed inset-0 -z-20 bg-gradient-to-br from-indigo-100 via-white to-sky-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"></div>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserConfig } from '../types';
+import { UserConfig } from '../types.ts';
 
 interface SettingsProps {
   config: UserConfig;

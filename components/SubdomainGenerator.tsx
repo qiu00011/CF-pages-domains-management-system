@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserConfig } from '../types';
+import { UserConfig } from '../types.ts';
 
 interface SubdomainGeneratorProps {
   config: UserConfig;
@@ -19,7 +19,7 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
   const handleGenerate = () => {
     const parts = dateStr.trim().split(".");
     if (parts.length !== 2) {
-      alert("⚠️ 请输入 MM.DD 格式，例如 03.15");
+      alert("⚠️ 请使用 MM.DD 格式 (例如 08.15)");
       return;
     }
 
@@ -28,88 +28,60 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
 
     const prefix = randomLetters(2) + month + randomLetters(2) + day + randomLetters(2);
     const parent = config.parentDomain || 'hyeri.top';
-    const fullSubdomain = `${prefix}.${parent}`;
+    const domain = `${prefix}.${parent}`;
     
-    const newResults: Array<{ label: string, value: string }> = [
-      { label: '生成的随机子域名', value: fullSubdomain }
+    const res: Array<{ label: string, value: string }> = [
+      { label: '生成的随机子域名', value: domain }
     ];
 
-    if (config.paths && config.paths.length > 0) {
-      config.paths.forEach(p => {
-        const pathSuffix = p.value.trim() || p.label;
-        newResults.push({
-          label: `订阅地址 (${p.label})`,
-          value: `https://${fullSubdomain}/${pathSuffix}`
-        });
-      });
-    }
-
-    setResults(newResults);
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      alert('📋 链接已成功复制');
+    (config.paths || []).forEach(p => {
+      const pathVal = p.value.trim() || p.label;
+      res.push({ label: `订阅链接 (${p.label})`, value: `https://${domain}/${pathVal}` });
     });
+
+    setResults(res);
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-10 py-6 animate-fade-in font-bold">
+    <div className="max-w-xl mx-auto py-4 space-y-8">
       <div className="text-center space-y-3">
-        <h2 className="text-4xl font-black dark:text-white tracking-tight uppercase">随机域名分发</h2>
-        <p className="text-slate-500 font-medium italic">基于日期算法自动化生成的访问地址</p>
+        <h2 className="text-4xl font-black dark:text-white tracking-tight">调度中心</h2>
+        <p className="text-slate-500 font-medium italic">基于日期算法动态生成分发地址</p>
       </div>
 
       <div className="bg-white/40 dark:bg-white/5 p-10 rounded-[50px] border border-white/20 shadow-2xl space-y-8">
-        <div className="flex items-center justify-between p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-3xl border border-blue-100/50 dark:border-blue-800/20">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-blue-800 dark:text-blue-300 uppercase tracking-widest">分发根域名</span>
-            <span className="text-lg text-blue-600 dark:text-blue-400 font-black tracking-tight">{config.parentDomain || '未在配置中心设置'}</span>
-          </div>
-          <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner">🌐</div>
-        </div>
-
         <div className="space-y-4">
-          <label className="block text-sm font-black text-slate-700 dark:text-slate-300 pl-2 uppercase tracking-wider">输入分发日期 (MM.DD)</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest pl-2">
+            当前分发环境: <span className="text-blue-600 dark:text-blue-400">{config.parentDomain || '未设置'}</span>
+          </label>
           <div className="flex gap-4">
             <input 
-              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[24px] px-6 py-5 outline-none text-2xl dark:text-white focus:ring-4 ring-blue-500/20 transition-all placeholder:opacity-30 font-bold"
-              placeholder="例如 03.15"
-              value={dateStr}
-              onChange={(e) => setDateStr(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[24px] px-8 py-5 outline-none text-2xl font-mono dark:text-white shadow-inner focus:ring-4 ring-blue-500/10 transition-all" 
+              placeholder="08.15" 
+              value={dateStr} 
+              onInput={(e: any) => setDateStr(e.target.value)} 
+              onKeyDown={(e) => e.key === 'Enter' && handleGenerate()} 
             />
-            <button 
-              onClick={handleGenerate}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-10 rounded-[24px] font-black shadow-xl shadow-blue-500/30 active:scale-95 transition-all text-lg"
-            >
-              一键生成
-            </button>
+            <button onClick={handleGenerate} className="bg-blue-600 text-white px-10 rounded-[24px] font-black text-lg shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95">生成</button>
           </div>
         </div>
 
         {results.length > 0 && (
-          <div className="space-y-4 pt-8 border-t border-slate-100 dark:border-white/10 animate-fade-in">
-            <div className="flex items-center justify-between px-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">生成结果列表</label>
-              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 px-3 py-1 rounded-full">数据已解析</span>
-            </div>
-            <div className="space-y-3">
-              {results.map((res, i) => (
-                <div key={i} className="group p-5 bg-white/80 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-[28px] flex items-center justify-between hover:border-blue-400/50 transition-all shadow-sm">
-                  <div className="flex flex-col gap-1 overflow-hidden pr-4">
-                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{res.label}</span>
-                    <span className="text-base truncate dark:text-slate-100 font-bold tracking-tight">{res.value}</span>
-                  </div>
-                  <button 
-                    onClick={() => copyToClipboard(res.value)}
-                    className="flex-shrink-0 p-3.5 bg-slate-50 dark:bg-slate-800 rounded-2xl text-xs font-black text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-inner group-hover:scale-105"
-                  >
-                    复制
-                  </button>
+          <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-white/10 animate-fade-in">
+            {results.map((r, i) => (
+              <div key={i} className="p-6 bg-white/80 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-[32px] flex items-center justify-between group hover:border-blue-500/50 transition-all shadow-sm">
+                <div className="overflow-hidden pr-4">
+                  <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{r.label}</div>
+                  <div className="text-base font-mono truncate dark:text-slate-200 font-bold">{r.value}</div>
                 </div>
-              ))}
-            </div>
+                <button 
+                  onClick={() => {navigator.clipboard.writeText(r.value); alert('📋 已复制')}} 
+                  className="flex-shrink-0 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase hover:bg-blue-600 hover:text-white transition-all shadow-inner"
+                >
+                  复制
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

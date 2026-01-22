@@ -6,59 +6,65 @@ interface SidebarProps {
   setActiveTab: (tab: Tab) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  logo: string;
+  name: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDarkMode, toggleDarkMode }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDarkMode, toggleDarkMode, logo, name }) => {
   const menuItems = [
-    { id: Tab.Domains, label: '域名管理', icon: '🌐' },
-    { id: Tab.Generator, label: '随机分发', icon: '✨' },
-    { id: Tab.Settings, label: '环境设置', icon: '⚙️' },
+    { id: Tab.Domains, label: '域名控制', icon: '🌐' },
+    { id: Tab.Generator, label: '随机生成', icon: '✨' },
+    { id: Tab.Settings, label: '配置中心', icon: '⚙️' },
   ];
 
   return (
-    <div className="w-64 bg-slate-900 flex flex-col h-full shrink-0 border-r border-slate-800">
-      <div className="p-8 border-b border-slate-800/50">
+    <>
+      {/* 移动端顶栏 */}
+      <div className="md:hidden flex items-center justify-between mb-3 px-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xl font-black">
-            ZY
-          </div>
-          <div>
-            <h1 className="font-bold text-white text-lg leading-tight">子怡云</h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Dash Control</p>
-          </div>
+          <img src={logo} className="w-9 h-9 rounded-2xl shadow-lg object-cover" />
+          <h1 className="font-black text-base dark:text-white tracking-tight">{name}</h1>
         </div>
-      </div>
-
-      <nav className="flex-1 py-6 px-4 space-y-2">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm ${
-              activeTab === item.id
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-            }`}
-          >
-            <span className="text-xl">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      <div className="p-6 bg-slate-950/50 border-t border-slate-800">
-        <button
-          onClick={toggleDarkMode}
-          className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
-        >
-          <span className="text-xs font-bold uppercase tracking-wider">系统主题</span>
-          <span className="text-lg">{isDarkMode ? '🌙' : '☀️'}</span>
+        <button onClick={toggleDarkMode} className="p-3 rounded-2xl glass text-lg shadow-sm">
+          {isDarkMode ? '🌙' : '☀️'}
         </button>
-        <div className="mt-4 text-center">
-          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">V2.6 STABLE</p>
+      </div>
+
+      {/* 桌面端侧边栏 */}
+      <div className="w-64 max-md:hidden glass rounded-[36px] p-6 flex flex-col shadow-2xl mr-4 border-white/20">
+        <div className="flex items-center gap-4 mb-12 pl-2">
+          <img src={logo} className="w-12 h-12 rounded-2xl shadow-xl object-cover" />
+          <h1 className="font-black text-xl dark:text-white tracking-tighter leading-tight">{name}</h1>
+        </div>
+
+        <nav className="flex-1 space-y-3">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 ${
+                activeTab === item.id
+                  ? 'bg-blue-600 text-white shadow-xl scale-[1.03]'
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-white/10'
+              }`}
+            >
+              <span className="text-xl">{item.icon}</span>
+              <span className="font-black text-sm uppercase tracking-[0.1em]">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-white/10">
+          <button
+            onClick={toggleDarkMode}
+            className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-xl hover:scale-110 active:scale-95 transition-transform"
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] opacity-60">Stable v2.6</span>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

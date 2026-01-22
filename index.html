@@ -3,35 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>子怡云 - 综合管理系统</title>
+    <title>子怡vpn面板 - 综合管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sidebar-width: 260px;
+            --apple-font: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, sans-serif;
         }
-        * {
-            font-family: "Microsoft YaHei", "微软雅黑", system-ui, sans-serif !important;
+        body { 
+            font-family: var(--apple-font);
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #020617;
+            -webkit-font-smoothing: antialiased;
         }
-        body {
-            margin: 0;
-            background-color: #f8fafc;
-            color: #1e293b;
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        /* 经典面板容器 */
-        .admin-layout {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* 修复加载状态 */
-        #root:empty {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #f1f5f9;
-            font-size: 14px;
+        #custom-bg-layer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -10;
+            object-fit: cover;
+            transition: opacity 1.5s ease;
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .dark .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+        
+        #root:empty::after {
+            content: "正在初始化系统核心...";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
             color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
         }
     </style>
     <script type="importmap">
@@ -46,7 +65,7 @@
 }
 </script>
 </head>
-<body>
-    <div id="root">正在初始化系统核心模块...</div>
+<body class="transition-colors duration-500">
+    <div id="root"></div>
 </body>
 </html>
