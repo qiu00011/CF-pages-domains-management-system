@@ -9,6 +9,7 @@ import Login from './components/Login.tsx';
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<Tab>(Tab.Domains);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [config, setConfig] = useState<UserConfig>({
     accountId: '',
     pagesToken: '',
@@ -17,7 +18,6 @@ const App: React.FC = () => {
     parentDomain: 'hyeri.top',
     paths: [{ label: 'U1', value: '' }]
   });
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -41,20 +41,12 @@ const App: React.FC = () => {
     }
   }, [fetchConfig]);
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
-
   if (!isAuthenticated) {
     return <Login onLoginSuccess={() => { setIsAuthenticated(true); fetchConfig(); }} />;
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+    <div className={`flex h-screen overflow-hidden ${isDarkMode ? 'dark bg-slate-950' : 'bg-slate-50'}`}>
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -62,36 +54,46 @@ const App: React.FC = () => {
         toggleDarkMode={() => setIsDarkMode(!isDarkMode)} 
       />
       
-      <main className="flex-1 overflow-y-auto">
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-10">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-            {activeTab === Tab.Domains && '自定义域名管理'}
-            {activeTab === Tab.Generator && '随机域名分发'}
-            {activeTab === Tab.Settings && '系统配置中心'}
-          </h2>
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">
+              {activeTab === Tab.Domains && '🌐'}
+              {activeTab === Tab.Generator && '✨'}
+              {activeTab === Tab.Settings && '⚙️'}
+            </span>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+              {activeTab === Tab.Domains && '自定义域名管理'}
+              {activeTab === Tab.Generator && '随机域名分发'}
+              {activeTab === Tab.Settings && '系统配置中心'}
+            </h2>
+          </div>
           <div className="flex items-center gap-4">
-             <span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full uppercase">Cloudflare Online</span>
+            <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full">
+              CF API 已连接
+            </div>
           </div>
         </header>
 
-        <div className="p-8 max-w-7xl mx-auto animate-fade-in">
-          {activeTab === Tab.Domains && <DomainManager config={config} />}
-          {activeTab === Tab.Generator && <SubdomainGenerator config={config} />}
-          {activeTab === Tab.Settings && <Settings config={config} setConfig={setConfig} />}
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="max-w-6xl mx-auto">
+            {activeTab === Tab.Domains && <DomainManager config={config} />}
+            {activeTab === Tab.Generator && <SubdomainGenerator config={config} />}
+            {activeTab === Tab.Settings && <Settings config={config} setConfig={setConfig} />}
+          </div>
         </div>
       </main>
 
       {config.backgroundUrl && (
-        config.backgroundUrl.endsWith('.mp4') ? (
-          <video autoPlay loop muted className="fixed inset-0 -z-10 w-full h-full object-cover opacity-5 pointer-events-none">
-            <source src={config.backgroundUrl} type="video/mp4" />
-          </video>
-        ) : (
-          <div 
-            className="fixed inset-0 -z-10 bg-cover bg-center opacity-5 pointer-events-none"
-            style={{ backgroundImage: `url(${config.backgroundUrl})` }}
-          />
-        )
+        <div className="fixed inset-0 -z-10 pointer-events-none opacity-[0.03]">
+          {config.backgroundUrl.endsWith('.mp4') ? (
+            <video autoPlay loop muted className="w-full h-full object-cover">
+              <source src={config.backgroundUrl} type="video/mp4" />
+            </video>
+          ) : (
+            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${config.backgroundUrl})` }} />
+          )}
+        </div>
       )}
     </div>
   );
