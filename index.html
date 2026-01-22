@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -47,7 +46,6 @@
         import { useState, useEffect, useCallback, useMemo } from 'https://esm.sh/preact/hooks';
         import htm from 'https://esm.sh/htm';
 
-        // 初始化 htm
         const html = htm.bind(h);
 
         // --- 子组件: Login ---
@@ -116,7 +114,10 @@
             };
 
             const fetchProjects = async () => {
-                if (!config.accountId || !config.pagesToken) return;
+                if (!config.accountId || !config.pagesToken) {
+                    addLog("⚠️ 请先在设置中配置 Account ID 和 Pages Token");
+                    return;
+                }
                 setLoading(true); addLog("获取项目列表中...");
                 try {
                     const resp = await fetchData(`/api/cf/accounts/${config.accountId}/pages/projects`);
@@ -124,8 +125,10 @@
                     if (data.success) {
                         setProjects(data.result);
                         if (data.result.length > 0 && !selectedProject) setSelectedProject(data.result[0].name);
+                    } else {
+                        addLog(`获取失败: ${data.errors?.[0]?.message || '未知错误'}`);
                     }
-                } catch (err) { addLog(`错误: ${err}`); } finally { setLoading(false); }
+                } catch (err) { addLog(`网络错误: ${err}`); } finally { setLoading(false); }
             };
 
             const fetchDomains = async (projName) => {
@@ -139,6 +142,7 @@
             };
 
             const handleAction = async (action, domainName = '') => {
+                if (action === 'add' && !newDomain) return;
                 setLoading(true);
                 try {
                     const url = `/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains${domainName ? '/' + domainName : ''}`;
@@ -155,7 +159,7 @@
                 } catch (err) { addLog(`异常: ${err}`); } finally { setLoading(false); }
             };
 
-            useEffect(() => { fetchProjects(); }, [config.accountId]);
+            useEffect(() => { fetchProjects(); }, [config.accountId, config.pagesToken]);
             useEffect(() => { if (selectedProject) fetchDomains(selectedProject); }, [selectedProject]);
 
             return html`
@@ -163,9 +167,9 @@
                     <div class="flex justify-between items-end">
                         <div>
                             <h2 class="text-2xl font-bold dark:text-white">域名管理面板</h2>
-                            <p class="text-slate-500 text-sm">配置项目自定义域名与 DNS</p>
+                            <p class="text-slate-500 text-sm">管理 Pages 项目的自定义域名</p>
                         </div>
-                        <button onClick=${fetchProjects} class="px-4 py-2 bg-white/50 dark:bg-white/10 rounded-lg text-sm hover:bg-white transition-colors dark:text-white">刷新数据</button>
+                        <button onClick=${fetchProjects} class="px-4 py-2 bg-white/50 dark:bg-white/10 rounded-lg text-sm hover:bg-white transition-colors dark:text-white">同步项目</button>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -174,27 +178,30 @@
                                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">选择 Pages 项目</label>
                                 <select class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm"
                                     value=${selectedProject} onChange=${e => setSelectedProject(e.target.value)}>
-                                    ${projects.map(p => html`<option value=${p.name}>${p.name}</option>`)}
+                                    ${projects.length === 0 ? html`<option>暂无项目</option>` : projects.map(p => html`<option value=${p.name}>${p.name}</option>`)}
                                 </select>
                             </div>
                             <div class="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20">
-                                <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">快速绑定新域名</label>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">快速绑定域名</label>
                                 <div class="flex gap-2">
                                     <input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
-                                        placeholder="sub.domain.com" value=${newDomain} onInput=${e => setNewDomain(e.target.value)} />
+                                        placeholder="例如: blog.example.com" value=${newDomain} onInput=${e => setNewDomain(e.target.value)} />
                                     <button onClick=${() => handleAction('add')} disabled=${loading || !newDomain} class="bg-blue-600 text-white px-6 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50">添加</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20 flex flex-col min-h-[200px]">
-                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-3">当前已绑定</label>
+                        <div class="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20 flex flex-col min-h-[220px]">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-3">当前域名列表</label>
                             <div class="flex-1 overflow-y-auto space-y-2 pr-2">
-                                ${domains.length === 0 ? html`<div class="h-full flex items-center justify-center opacity-30 italic text-sm dark:text-white">暂无域名</div>` : 
+                                ${domains.length === 0 ? html`<div class="h-full flex items-center justify-center opacity-30 italic text-sm dark:text-white">无绑定域名</div>` : 
                                   domains.map(d => html`
                                     <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-white/5">
-                                        <span class="text-sm dark:text-white font-medium">${d.name}</span>
-                                        <button onClick=${() => handleAction('remove', d.name)} class="text-red-500 text-xs hover:bg-red-50 p-2 rounded-lg">移除</button>
+                                      <div>
+                                        <div class="text-sm dark:text-white font-medium">${d.name}</div>
+                                        <div class="text-[10px] text-slate-400 uppercase">${d.status}</div>
+                                      </div>
+                                      <button onClick=${() => handleAction('remove', d.name)} class="text-red-500 text-xs hover:bg-red-50 p-2 rounded-lg">移除</button>
                                     </div>
                                 `)}
                             </div>
@@ -228,22 +235,22 @@
             return html`
                 <div class="max-w-xl mx-auto py-4 space-y-8 animate-fade-in">
                     <div class="text-center space-y-2">
-                        <h2 class="text-3xl font-bold dark:text-white">随机生成器</h2>
-                        <p class="text-slate-500">基于日期逻辑生成高强度唯一子域名</p>
+                        <h2 class="text-3xl font-bold dark:text-white">随机子域名生成</h2>
+                        <p class="text-slate-500">基于日期和随机算法生成唯一子域名</p>
                     </div>
                     <div class="bg-white/40 dark:bg-white/5 p-8 rounded-3xl border border-white/20 shadow-xl space-y-6">
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold dark:text-slate-300">输入日期 (MM.DD)</label>
                             <div class="flex gap-3">
                                 <input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none text-lg font-mono dark:text-white" 
-                                    placeholder="例如 12.25" value=${dateStr} onInput=${e => setDateStr(e.target.value)} />
+                                    placeholder="12.25" value=${dateStr} onInput=${e => setDateStr(e.target.value)} />
                                 <button onClick=${handleGenerate} class="bg-blue-600 text-white px-8 rounded-2xl font-bold">生成</button>
                             </div>
                         </div>
                         ${results.length > 0 && html`
                             <div class="space-y-3 pt-4">
                                 ${results.map(r => html`
-                                    <div class="p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-between">
+                                    <div class="p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-between group">
                                         <div class="overflow-hidden">
                                             <div class="text-[10px] font-bold text-slate-400 uppercase">${r.label}</div>
                                             <div class="text-sm font-mono truncate dark:text-slate-200">${r.value}</div>
@@ -271,31 +278,108 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(local)
                     });
-                    if ((await resp.json()).success) { setConfig(local); alert("配置已保存"); }
-                } catch (e) { alert("失败: " + e); } finally { setSaving(false); }
+                    if ((await resp.json()).success) { 
+                      setConfig(local); 
+                      alert("✅ 配置已成功同步至云端"); 
+                    }
+                } catch (e) { alert("❌ 保存失败: " + e); } finally { setSaving(false); }
+            };
+
+            const updatePath = (index, field, val) => {
+              const newPaths = [...local.paths];
+              newPaths[index][field] = val;
+              setLocal({...local, paths: newPaths});
             };
 
             return html`
                 <div class="space-y-8 pb-10 animate-fade-in">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold dark:text-white">系统设置</h2>
-                        <button onClick=${handleSave} class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg">${saving ? '保存中...' : '保存配置'}</button>
+                        <h2 class="text-2xl font-bold dark:text-white">系统全局配置</h2>
+                        <button onClick=${handleSave} class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all">
+                          ${saving ? '正在同步...' : '保存并应用'}
+                        </button>
                     </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="p-6 bg-white/40 dark:bg-white/5 rounded-3xl border border-white/20 space-y-4">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase">Cloudflare 凭据</h3>
-                            <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
-                                placeholder="Account ID" value=${local.accountId} onInput=${e => setLocal({...local, accountId: e.target.value})} />
-                            <input type="password" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
-                                placeholder="Pages API Token" value=${local.pagesToken} onInput=${e => setLocal({...local, pagesToken: e.target.value})} />
+                        <!-- 第一列: API 凭据 -->
+                        <div class="space-y-4">
+                          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <span>🔐</span> Cloudflare API 凭据
+                          </h3>
+                          <div class="p-6 bg-white/40 dark:bg-white/5 rounded-3xl border border-white/20 space-y-4">
+                              <div>
+                                <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Account ID</label>
+                                <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
+                                    placeholder="CF 账户 ID" value=${local.accountId} onInput=${e => setLocal({...local, accountId: e.target.value})} />
+                              </div>
+                              <div>
+                                <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Pages API Token</label>
+                                <input type="password" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
+                                    placeholder="包含 Pages 编辑权限的令牌" value=${local.pagesToken} onInput=${e => setLocal({...local, pagesToken: e.target.value})} />
+                              </div>
+                              <div>
+                                <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Zone API Token</label>
+                                <input type="password" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
+                                    placeholder="包含 DNS 编辑权限的令牌" value=${local.zoneToken} onInput=${e => setLocal({...local, zoneToken: e.target.value})} />
+                              </div>
+                          </div>
                         </div>
-                        <div class="p-6 bg-white/40 dark:bg-white/5 rounded-3xl border border-white/20 space-y-4">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase">生成器配置</h3>
-                            <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
-                                placeholder="父域名 (example.com)" value=${local.parentDomain} onInput=${e => setLocal({...local, parentDomain: e.target.value})} />
-                            <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
-                                placeholder="背景图片/视频 URL" value=${local.backgroundUrl} onInput=${e => setLocal({...local, backgroundUrl: e.target.value})} />
+
+                        <!-- 第二列: 生成器与个性化 -->
+                        <div class="space-y-4">
+                          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <span>🎨</span> 生成参数与外观
+                          </h3>
+                          <div class="p-6 bg-white/40 dark:bg-white/5 rounded-3xl border border-white/20 space-y-4">
+                              <div>
+                                <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">父级域名</label>
+                                <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
+                                    placeholder="example.com" value=${local.parentDomain} onInput=${e => setLocal({...local, parentDomain: e.target.value})} />
+                              </div>
+                              <div>
+                                <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">背景媒体直链</label>
+                                <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
+                                    placeholder="图片或 MP4 链接" value=${local.backgroundUrl} onInput=${e => setLocal({...local, backgroundUrl: e.target.value})} />
+                              </div>
+                          </div>
                         </div>
+                    </div>
+
+                    <!-- 底部: 路径管理 -->
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <span>🔗</span> 默认生成路径 (Path Values)
+                        </h3>
+                        <button onClick=${() => setLocal({...local, paths: [...local.paths, {label: 'U'+(local.paths.length+1), value: ''}]})} 
+                          class="text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg">+ 增加路径</button>
+                      </div>
+                      <div class="bg-white/40 dark:bg-white/5 rounded-3xl border border-white/20 overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                          <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+                            <tr>
+                              <th class="px-6 py-3 font-bold text-slate-500 uppercase text-[10px]">标识</th>
+                              <th class="px-6 py-3 font-bold text-slate-500 uppercase text-[10px]">路径路径 (Path)</th>
+                              <th class="px-6 py-3"></th>
+                            </tr>
+                          </thead>
+                          <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                            ${local.paths.map((p, idx) => html`
+                              <tr class="hover:bg-white/50 dark:hover:bg-white/5">
+                                <td class="px-6 py-3">
+                                  <input class="bg-transparent outline-none dark:text-white font-bold" value=${p.label} onInput=${e => updatePath(idx, 'label', e.target.value)} />
+                                </td>
+                                <td class="px-6 py-3">
+                                  <input class="bg-transparent outline-none dark:text-slate-400 font-mono w-full" value=${p.value} onInput=${e => updatePath(idx, 'value', e.target.value)} />
+                                </td>
+                                <td class="px-6 py-3 text-right">
+                                  <button onClick=${() => setLocal({...local, paths: local.paths.filter((_, i) => i !== idx)})} class="text-red-400 hover:text-red-600 font-bold text-xs">移除</button>
+                                </td>
+                              </tr>
+                            `)}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                 </div>
             `;
@@ -332,25 +416,33 @@
             return html`
                 <div class="flex h-screen w-screen overflow-hidden relative z-10 p-4">
                     <!-- Sidebar -->
-                    <div class="w-64 glass rounded-3xl p-6 flex flex-col shadow-xl mr-4">
-                        <div class="flex items-center gap-3 mb-10">
-                            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">CF</div>
-                            <h1 class="font-semibold text-lg dark:text-white">Pages Hub</h1>
+                    <div class="w-64 glass rounded-[32px] p-6 flex flex-col shadow-2xl mr-4 border-white/20">
+                        <div class="flex items-center gap-3 mb-10 pl-2">
+                            <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg">CF</div>
+                            <h1 class="font-bold text-lg dark:text-white tracking-tight">Pages Hub</h1>
                         </div>
                         <nav class="flex-1 space-y-2">
-                            ${['domains', 'generator', 'settings'].map(t => html`
-                                <button onClick=${() => setTab(t)} class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${tab === t ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-white/5'}">
-                                    <span class="font-medium">${t === 'domains' ? '域名管理' : t === 'generator' ? '随机生成' : '系统设置'}</span>
+                            ${[
+                              {id: 'domains', label: '域名管理', icon: '🌐'},
+                              {id: 'generator', label: '子域名生成', icon: '✨'},
+                              {id: 'settings', label: '设置中心', icon: '⚙️'}
+                            ].map(t => html`
+                                <button onClick=${() => setTab(t.id)} class="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 ${tab === t.id ? 'bg-blue-600 text-white shadow-xl scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5'}">
+                                    <span class="text-lg">${t.icon}</span>
+                                    <span class="font-semibold text-sm">${t.label}</span>
                                 </button>
                             `)}
                         </nav>
-                        <button onClick=${() => setIsDark(!isDark)} class="mt-auto p-3 rounded-full bg-slate-100 dark:bg-slate-800 self-start hover:scale-110 transition-transform">
-                            ${isDark ? '🌙' : '☀️'}
-                        </button>
+                        <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-white/10">
+                          <button onClick=${() => setIsDark(!isDark)} class="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-lg hover:scale-110 transition-transform">
+                              ${isDark ? '🌙' : '☀️'}
+                          </button>
+                          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v2.1 Stable</span>
+                        </div>
                     </div>
                     
                     <!-- Main -->
-                    <main class="flex-1 overflow-y-auto p-8 glass rounded-3xl shadow-2xl relative">
+                    <main class="flex-1 overflow-y-auto p-8 glass rounded-[32px] shadow-2xl relative border-white/20">
                         ${tab === 'domains' && html`<${DomainManager} config=${config} />`}
                         ${tab === 'generator' && html`<${SubdomainGenerator} config=${config} />`}
                         ${tab === 'settings' && html`<${Settings} config=${config} setConfig=${setConfig} />`}
