@@ -1,13 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 
-console.log("🚀 子怡云核心系统启动... 当前字体：微软雅黑/Microsoft YaHei");
+console.log("🚀 系统启动：微软雅黑字体已加载");
 
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
   root.render(<App />);
-} else {
-  console.error("❌ 找不到根节点 #root");
 }
