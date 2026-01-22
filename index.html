@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -27,6 +28,8 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
     </style>
 <script type="importmap">
 {
@@ -83,7 +86,7 @@
                             <p class="text-slate-400 text-sm">云端 Pages 调度系统</p>
                         </div>
                         <div class="space-y-4">
-                            <input type="password" class="w-full bg-black/40 border ${error ? 'border-red-500' : 'border-white/10'} rounded-2xl px-5 py-4 text-center outline-none focus:ring-2 ring-blue-500 transition-all text-white" 
+                            <input type="password" class="w-full bg-black/40 border ${error ? 'border-red-500' : 'border-white/10'} rounded-2xl px-5 py-4 text-center outline-none focus:ring-2 ring-blue-500 transition-all text-white font-mono" 
                                 placeholder="输入访问密码" value=${password} onInput=${e => setPassword(e.target.value)} onKeyDown=${e => e.key === 'Enter' && handleLogin()} />
                             <button onClick=${handleLogin} disabled=${loading} class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
                                 ${loading ? '正在进入...' : '立即进入系统'}
@@ -118,10 +121,10 @@
 
             const fetchProjects = async () => {
                 if (!config.accountId || !config.pagesToken) {
-                    addLog("⚠️ 请先配置 API 凭据");
+                    addLog("⚠️ 请先在配置中心填写 API 凭据");
                     return;
                 }
-                setLoading(true); addLog("获取项目列表中...");
+                setLoading(true); addLog("正在获取 Cloudflare 项目列表...");
                 try {
                     const resp = await fetchData(`/api/cf/accounts/${config.accountId}/pages/projects`);
                     const data = await resp.json();
@@ -129,7 +132,7 @@
                         setProjects(data.result);
                         if (data.result.length > 0 && !selectedProject) setSelectedProject(data.result[0].name);
                     } else {
-                        addLog(`获取失败: ${data.errors?.[0]?.message || '错误'}`);
+                        addLog(`获取失败: ${data.errors?.[0]?.message || '未知错误'}`);
                     }
                 } catch (err) { addLog(`网络错误: ${err}`); } finally { setLoading(false); }
             };
@@ -147,6 +150,8 @@
             const handleAction = async (action, domainName = '') => {
                 const targetDomain = action === 'add' ? newDomain : domainName;
                 if (!targetDomain || !selectedProject) return;
+                if (action === 'remove' && !confirm(`确定要移除 ${domainName} 吗？`)) return;
+                
                 setLoading(true);
                 try {
                     const url = `/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains${domainName ? '/' + domainName : ''}`;
@@ -156,11 +161,11 @@
                     });
                     const data = await resp.json();
                     if (data.success) {
-                        addLog(`✅ 成功: ${targetDomain}`);
+                        addLog(`✅ 操作成功: ${targetDomain}`);
                         if (action === 'add') setNewDomain('');
                         fetchDomains(selectedProject);
                     } else { 
-                      addLog(`❌ 失败: ${data.errors?.[0]?.message || 'API 错误'}`); 
+                      addLog(`❌ 操作失败: ${data.errors?.[0]?.message || 'API 错误'}`); 
                     }
                 } catch (err) { addLog(`⚠️ 异常: ${err}`); } finally { setLoading(false); }
             };
@@ -172,50 +177,51 @@
                 <div class="space-y-6 animate-fade-in">
                     <div class="flex justify-between items-end">
                         <div>
-                            <h2 class="text-2xl font-bold dark:text-white tracking-tight">域名管理面板</h2>
-                            <p class="text-slate-500 text-sm">管理 Cloudflare Pages 自定义域名</p>
+                            <h2 class="text-2xl font-bold dark:text-white tracking-tight">域名控制</h2>
+                            <p class="text-slate-500 text-sm">绑定与管理 Pages 自定义域名</p>
                         </div>
-                        <button onClick=${fetchProjects} class="px-4 py-2 bg-white/50 dark:bg-white/10 rounded-lg text-sm hover:bg-white transition-colors dark:text-white border border-white/20">刷新数据</button>
+                        <button onClick=${fetchProjects} class="px-4 py-2 bg-white/50 dark:bg-white/10 rounded-lg text-sm hover:bg-white transition-colors dark:text-white border border-white/20 font-bold">刷新</button>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-4">
                             <div class="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20">
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">选择项目</label>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">选择 Pages 项目</label>
                                 <select class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm"
                                     value=${selectedProject} onChange=${e => setSelectedProject(e.target.value)}>
                                     ${projects.length === 0 ? html`<option>暂无项目</option>` : projects.map(p => html`<option value=${p.name}>${p.name}</option>`)}
                                 </select>
                             </div>
                             <div class="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20">
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">快速绑定</label>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">快速绑定域名</label>
                                 <div class="flex gap-2">
-                                    <input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm" 
-                                        placeholder="sub.domain.com" value=${newDomain} onInput=${e => setNewDomain(e.target.value)} />
-                                    <button onClick=${() => handleAction('add')} disabled=${loading || !newDomain} class="bg-blue-600 text-white px-6 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition-all">添加</button>
+                                    <input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white text-sm font-mono" 
+                                        placeholder="sub.yourdomain.com" value=${newDomain} onInput=${e => setNewDomain(e.target.value)} />
+                                    <button onClick=${() => handleAction('add')} disabled=${loading || !newDomain} class="bg-blue-600 text-white px-6 rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-all">添加</button>
                                 </div>
                             </div>
                         </div>
 
                         <div class="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20 flex flex-col min-h-[220px]">
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-3">当前域名列表</label>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">当前已绑定域名</label>
                             <div class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scroll">
-                                ${domains.length === 0 ? html`<div class="h-full flex items-center justify-center opacity-30 italic text-sm dark:text-white">空</div>` : 
+                                ${domains.length === 0 ? html`<div class="h-full flex items-center justify-center opacity-30 italic text-sm dark:text-white">暂无域名</div>` : 
                                   domains.map(d => html`
                                     <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-white/5">
                                       <div>
-                                        <div class="text-sm dark:text-white font-medium">${d.name}</div>
-                                        <div class="text-[10px] text-slate-400 uppercase font-bold">${d.status}</div>
+                                        <div class="text-sm dark:text-white font-bold font-mono">${d.name}</div>
+                                        <div class="text-[9px] ${d.status === 'active' ? 'text-emerald-500' : 'text-orange-400'} uppercase font-black tracking-tighter">${d.status}</div>
                                       </div>
-                                      <button onClick=${() => handleAction('remove', d.name)} class="text-red-500 text-xs hover:bg-red-50 px-3 py-2 rounded-lg font-bold">移除</button>
+                                      <button onClick=${() => handleAction('remove', d.name)} class="text-red-500 text-[10px] hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 rounded-lg font-black uppercase">移除</button>
                                     </div>
                                 `)}
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-slate-900 text-emerald-400 p-4 rounded-2xl font-mono text-[10px] h-32 overflow-y-auto border border-white/5 shadow-inner">
+                    <div class="bg-slate-900 text-emerald-400 p-4 rounded-2xl font-mono text-[10px] h-32 overflow-y-auto border border-white/5 shadow-inner custom-scroll">
                         ${logs.map(log => html`<div>${log}</div>`)}
+                        ${logs.length === 0 && html`<div class="opacity-20 italic">等待操作日志...</div>`}
                     </div>
                 </div>
             `;
@@ -228,40 +234,51 @@
 
             const handleGenerate = () => {
                 const parts = dateStr.split(".");
-                if (parts.length !== 2) { alert("格式: MM.DD"); return; }
+                if (parts.length !== 2) { alert("⚠️ 格式错误，请使用 MM.DD (如 05.20)"); return; }
                 const randomL = (n) => Array.from({length:n}, () => "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random()*26)]).join('');
-                const prefix = randomL(2) + parts[0].padStart(2, '0') + randomL(2) + parts[1].padStart(2, '0') + randomL(2);
-                const domain = `${prefix}.${config.parentDomain || 'example.com'}`;
+                
+                const month = parts[0].padStart(2, '0');
+                const day = parts[1].padStart(2, '0');
+                
+                // 逻辑: 随机2位 + MM + 随机2位 + DD + 随机2位
+                const prefix = randomL(2) + month + randomL(2) + day + randomL(2);
+                const parent = config.parentDomain || 'example.com';
+                const domain = `${prefix}.${parent}`;
                 
                 const res = [{ label: '子域名', value: domain }];
-                (config.paths || []).forEach(p => res.push({ label: `URL (${p.label})`, value: `https://${domain}/${p.value}` }));
+                
+                // 同步读取配置中心的 U 路径
+                (config.paths || []).forEach(p => {
+                    const pathVal = p.value.trim() || p.label;
+                    res.push({ label: `订阅链接 (${p.label})`, value: `https://${domain}/${pathVal}` });
+                });
                 setResults(res);
             };
 
             return html`
                 <div class="max-w-xl mx-auto py-4 space-y-8 animate-fade-in">
                     <div class="text-center space-y-2">
-                        <h2 class="text-3xl font-bold dark:text-white">随机子域名系统</h2>
-                        <p class="text-slate-500">基于特定日期逻辑生成唯一访问地址</p>
+                        <h2 class="text-4xl font-black dark:text-white tracking-tight">随机生成</h2>
+                        <p class="text-slate-500 font-medium italic">基于日期逻辑生成唯一访问地址</p>
                     </div>
-                    <div class="bg-white/40 dark:bg-white/5 p-8 rounded-3xl border border-white/20 shadow-xl space-y-6">
-                        <div class="space-y-2">
-                            <label class="block text-sm font-bold dark:text-slate-300">日期 (MM.DD)</label>
-                            <div class="flex gap-3">
-                                <input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none text-lg font-mono dark:text-white" 
-                                    placeholder="12.31" value=${dateStr} onInput=${e => setDateStr(e.target.value)} />
-                                <button onClick=${handleGenerate} class="bg-blue-600 text-white px-8 rounded-2xl font-bold shadow-lg">生成</button>
+                    <div class="bg-white/40 dark:bg-white/5 p-10 rounded-[40px] border border-white/20 shadow-2xl space-y-8">
+                        <div class="space-y-4">
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest pl-2">输入日期 (MM.DD)</label>
+                            <div class="flex gap-4">
+                                <input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none text-2xl font-mono dark:text-white shadow-inner" 
+                                    placeholder="05.20" value=${dateStr} onInput=${e => setDateStr(e.target.value)} onKeyDown=${e => e.key === 'Enter' && handleGenerate()} />
+                                <button onClick=${handleGenerate} class="bg-blue-600 text-white px-10 rounded-2xl font-black text-lg shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95">生成</button>
                             </div>
                         </div>
                         ${results.length > 0 && html`
-                            <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-white/10">
+                            <div class="space-y-3 pt-6 border-t border-slate-100 dark:border-white/10">
                                 ${results.map(r => html`
-                                    <div class="p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-between group">
-                                        <div class="overflow-hidden">
-                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${r.label}</div>
-                                            <div class="text-sm font-mono truncate dark:text-slate-200">${r.value}</div>
+                                    <div class="p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-3xl flex items-center justify-between group hover:border-blue-500/50 transition-colors shadow-sm">
+                                        <div class="overflow-hidden pr-4">
+                                            <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">${r.label}</div>
+                                            <div class="text-sm font-mono truncate dark:text-slate-200 font-bold">${r.value}</div>
                                         </div>
-                                        <button onClick=${() => {navigator.clipboard.writeText(r.value); alert('复制成功')}} class="text-xs text-blue-500 font-bold ml-4">复制</button>
+                                        <button onClick=${() => {navigator.clipboard.writeText(r.value); alert('📋 复制成功')}} class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase hover:bg-blue-600 hover:text-white transition-all shadow-inner">复制</button>
                                     </div>
                                 `)}
                             </div>
@@ -284,42 +301,108 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(local)
                     });
-                    if ((await resp.json()).success) { setConfig(local); alert("✅ 已保存"); }
-                } catch (e) { alert("❌ 失败: " + e); } finally { setSaving(false); }
+                    if ((await resp.json()).success) { 
+                        setConfig(local); 
+                        alert("✅ 配置保存成功，系统已同步"); 
+                    }
+                } catch (e) { alert("❌ 保存失败: " + e); } finally { setSaving(false); }
             };
 
-            const updatePath = (idx, f, v) => {
-                const p = [...local.paths]; p[idx][f] = v; setLocal({...local, paths: p});
+            const addPath = () => {
+                const nextId = (local.paths || []).length + 1;
+                setLocal({ ...local, paths: [...(local.paths || []), { label: 'U' + nextId, value: '' }] });
+            };
+
+            const removePath = (idx) => {
+                setLocal({ ...local, paths: local.paths.filter((_, i) => i !== idx) });
+            };
+
+            const updatePath = (idx, field, val) => {
+                const p = [...local.paths]; p[idx][field] = val; setLocal({...local, paths: p});
             };
 
             return html`
                 <div class="space-y-8 pb-10 animate-fade-in">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold dark:text-white tracking-tight">系统环境设置</h2>
-                        <button onClick=${handleSave} class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg">
-                          ${saving ? '正在同步...' : '保存配置'}
+                        <div>
+                            <h2 class="text-2xl font-black dark:text-white tracking-tight">配置中心</h2>
+                            <p class="text-slate-500 text-sm font-medium">设置 API 凭证与分发路径逻辑</p>
+                        </div>
+                        <button onClick=${handleSave} disabled=${saving} class="bg-blue-600 text-white px-10 py-3.5 rounded-2xl font-black shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all">
+                          ${saving ? '正在保存...' : '保存配置'}
                         </button>
                     </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-4">
-                          <h3 class="text-xs font-black text-slate-400 uppercase flex items-center gap-2">🔑 API 凭据</h3>
-                          <div class="p-6 bg-white/40 dark:bg-white/5 rounded-[32px] border border-white/20 space-y-4">
-                              <input class="w-full bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 dark:text-white text-sm" 
-                                  placeholder="Account ID" value=${local.accountId} onInput=${e => setLocal({...local, accountId: e.target.value})} />
-                              <input type="password" class="w-full bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 dark:text-white text-sm" 
-                                  placeholder="Pages Token" value=${local.pagesToken} onInput=${e => setLocal({...local, pagesToken: e.target.value})} />
-                              <input type="password" class="w-full bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 dark:text-white text-sm" 
-                                  placeholder="Zone Token" value=${local.zoneToken} onInput=${e => setLocal({...local, zoneToken: e.target.value})} />
+                          <h3 class="text-xs font-black text-slate-400 uppercase flex items-center gap-2 px-2">🔑 Cloudflare API 凭据</h3>
+                          <div class="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 space-y-6 shadow-sm">
+                              <div class="space-y-2">
+                                  <label class="text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">账户 ID (Account ID)</label>
+                                  <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 dark:text-white text-sm font-mono focus:ring-2 ring-blue-500 transition-all outline-none" 
+                                      placeholder="Cloudflare Account ID" value=${local.accountId} onInput=${e => setLocal({...local, accountId: e.target.value})} />
+                              </div>
+                              <div class="space-y-2">
+                                  <label class="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Pages 令牌 (Pages API Token)</label>
+                                  <input type="password" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 dark:text-white text-sm font-mono focus:ring-2 ring-emerald-500 transition-all outline-none" 
+                                      placeholder="包含 Pages:Edit 权限的 Token" value=${local.pagesToken} onInput=${e => setLocal({...local, pagesToken: e.target.value})} />
+                              </div>
+                              <div class="space-y-2">
+                                  <label class="text-[10px] font-black text-orange-600 uppercase tracking-widest ml-1">DNS 令牌 (Zone API Token)</label>
+                                  <input type="password" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 dark:text-white text-sm font-mono focus:ring-2 ring-orange-500 transition-all outline-none" 
+                                      placeholder="包含 DNS:Edit 权限的 Token" value=${local.zoneToken} onInput=${e => setLocal({...local, zoneToken: e.target.value})} />
+                              </div>
                           </div>
                         </div>
+
                         <div class="space-y-4">
-                          <h3 class="text-xs font-black text-slate-400 uppercase flex items-center gap-2">🎨 界面设置</h3>
-                          <div class="p-6 bg-white/40 dark:bg-white/5 rounded-[32px] border border-white/20 space-y-4">
-                              <input class="w-full bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 dark:text-white text-sm" 
-                                  placeholder="父域名" value=${local.parentDomain} onInput=${e => setLocal({...local, parentDomain: e.target.value})} />
-                              <input class="w-full bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 dark:text-white text-sm" 
-                                  placeholder="背景直链" value=${local.backgroundUrl} onInput=${e => setLocal({...local, backgroundUrl: e.target.value})} />
+                          <h3 class="text-xs font-black text-slate-400 uppercase flex items-center gap-2 px-2">🎨 面板界面设置</h3>
+                          <div class="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 space-y-6 shadow-sm">
+                              <div class="space-y-2">
+                                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">分发主域名</label>
+                                  <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 dark:text-white text-sm font-mono focus:ring-2 ring-purple-500 transition-all outline-none" 
+                                      placeholder="例如: hyeri.top" value=${local.parentDomain} onInput=${e => setLocal({...local, parentDomain: e.target.value})} />
+                              </div>
+                              <div class="space-y-2">
+                                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">背景背景直链 (图片/视频)</label>
+                                  <input class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 dark:text-white text-sm font-mono focus:ring-2 ring-purple-500 transition-all outline-none" 
+                                      placeholder="https://.../bg.jpg" value=${local.backgroundUrl} onInput=${e => setLocal({...local, backgroundUrl: e.target.value})} />
+                              </div>
                           </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between px-2">
+                             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">🔗 分发路径管理 (U1, U2...)</h3>
+                             <button onClick=${addPath} class="text-[11px] font-black bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-5 py-2 rounded-xl shadow-sm hover:scale-105 transition-all">+ 新增槽位</button>
+                        </div>
+                        <div class="bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 overflow-hidden shadow-sm">
+                             <table class="w-full text-left text-sm border-collapse">
+                                <thead class="bg-slate-100/50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10">
+                                    <tr>
+                                        <th class="px-8 py-5 font-black text-slate-500 uppercase text-[10px] tracking-widest">槽位标签</th>
+                                        <th class="px-8 py-5 font-black text-slate-500 uppercase text-[10px] tracking-widest">路径后缀 (Path)</th>
+                                        <th class="px-8 py-5"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                                    ${(local.paths || []).map((p, i) => html`
+                                        <tr class="hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
+                                            <td class="px-8 py-5 font-bold text-blue-600 dark:text-blue-400">
+                                                <input class="bg-transparent outline-none w-full" value=${p.label} onInput=${e => updatePath(i, 'label', e.target.value)} />
+                                            </td>
+                                            <td class="px-8 py-5 font-mono text-slate-600 dark:text-slate-300">
+                                                <input class="bg-transparent outline-none w-full" placeholder="例如: vless-sub" value=${p.value} onInput=${e => updatePath(i, 'value', e.target.value)} />
+                                            </td>
+                                            <td class="px-8 py-5 text-right">
+                                                <button onClick=${() => removePath(i)} class="text-red-400 hover:text-red-600 font-black text-[10px] uppercase">删除</button>
+                                            </td>
+                                        </tr>
+                                    `)}
+                                    ${(!local.paths || local.paths.length === 0) && html`<tr><td colspan="3" class="px-8 py-12 text-center text-slate-400 italic font-medium">尚未定义任何路径模板</td></tr>`}
+                                </tbody>
+                             </table>
                         </div>
                     </div>
                 </div>
@@ -331,7 +414,14 @@
             const [auth, setAuth] = useState(sessionStorage.getItem('authenticated') === 'true');
             const [tab, setTab] = useState('domains');
             const [isDark, setIsDark] = useState(false);
-            const [config, setConfig] = useState({ accountId: '', pagesToken: '', zoneToken: '', backgroundUrl: '', parentDomain: '', paths: [{label:'U1', value:'uuid'}] });
+            const [config, setConfig] = useState({ 
+                accountId: '', 
+                pagesToken: '', 
+                zoneToken: '', 
+                backgroundUrl: '', 
+                parentDomain: '', 
+                paths: [{label:'U1', value:''}] 
+            });
 
             useEffect(() => {
                 if (auth) { fetch('/api/config').then(r => r.json()).then(d => d.success && d.config && setConfig(d.config)); }
@@ -344,6 +434,7 @@
                     const isVid = /\.(mp4|webm|mov)(\?|$)/i.test(config.backgroundUrl);
                     const el = document.createElement(isVid ? 'video' : 'img');
                     el.id = 'custom-bg-layer'; el.src = config.backgroundUrl;
+                    el.style.opacity = '0';
                     if (isVid) { el.autoplay = el.loop = el.muted = el.playsInline = true; }
                     document.body.appendChild(el); setTimeout(() => el.style.opacity = '1', 50);
                 }
@@ -366,7 +457,7 @@
                             ].map(t => html`
                                 <button onClick=${() => setTab(t.id)} class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 ${tab === t.id ? 'bg-blue-600 text-white shadow-xl scale-[1.03]' : 'text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-white/10'}">
                                     <span class="text-xl">${t.icon}</span>
-                                    <span class="font-bold text-sm">${t.label}</span>
+                                    <span class="font-black text-sm uppercase tracking-wider">${t.label}</span>
                                 </button>
                             `)}
                         </nav>
@@ -374,7 +465,7 @@
                           <button onClick=${() => setIsDark(!isDark)} class="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-lg hover:scale-110 active:scale-95 transition-transform">
                               ${isDark ? '🌙' : '☀️'}
                           </button>
-                          <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest opacity-60">Stable Build</span>
+                          <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] opacity-60">Stable v2.5</span>
                         </div>
                     </div>
                     <main class="flex-1 overflow-y-auto p-10 max-md:p-6 glass rounded-[32px] shadow-2xl relative border-white/20 custom-scroll">
