@@ -76,29 +76,29 @@ const Settings: React.FC<SettingsProps> = ({ config, setConfig }) => {
           </h3>
           <div className="space-y-6 p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
             <div className="space-y-2">
-              <label className="block text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">账号 ID (Account ID)</label>
+              <label className="block text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest ml-1">账号 ID (Account ID)</label>
               <input 
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-blue-500 transition-all font-mono"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-blue-500 transition-all font-tech"
                 value={localConfig.accountId}
                 onChange={(e) => setLocalConfig({...localConfig, accountId: e.target.value})}
                 placeholder="填写您的 Cloudflare Account ID"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Pages 令牌 (Pages API Token)</label>
+              <label className="block text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest ml-1">Pages 令牌 (Pages API Token)</label>
               <input 
                 type="password"
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-emerald-500 transition-all font-mono"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-emerald-500 transition-all font-tech"
                 value={localConfig.pagesToken}
                 onChange={(e) => setLocalConfig({...localConfig, pagesToken: e.target.value})}
                 placeholder="填写包含 Pages 编辑权限的 Token"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-[11px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">域名 DNS 令牌 (Zone Token)</label>
+              <label className="block text-[11px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest ml-1">域名 DNS 令牌 (Zone Token)</label>
               <input 
                 type="password"
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-orange-500 transition-all font-mono"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-orange-500 transition-all font-tech"
                 value={localConfig.zoneToken}
                 onChange={(e) => setLocalConfig({...localConfig, zoneToken: e.target.value})}
                 placeholder="填写包含 DNS 编辑权限的 Token"
@@ -114,18 +114,18 @@ const Settings: React.FC<SettingsProps> = ({ config, setConfig }) => {
           </h3>
           <div className="space-y-6 p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
             <div className="space-y-2">
-              <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest">分发主域名 (Parent Domain)</label>
+              <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">分发主域名 (Parent Domain)</label>
               <input 
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-purple-500 transition-all font-mono"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-purple-500 transition-all font-tech"
                 value={localConfig.parentDomain}
                 onChange={(e) => setLocalConfig({...localConfig, parentDomain: e.target.value})}
                 placeholder="例如: hyeri.us.kg"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest">背景图片/视频 URL</label>
+              <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">背景图片/视频 URL</label>
               <input 
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-purple-500 transition-all font-mono"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none dark:text-white text-sm focus:ring-2 ring-purple-500 transition-all font-tech"
                 value={localConfig.backgroundUrl}
                 onChange={(e) => setLocalConfig({...localConfig, backgroundUrl: e.target.value})}
                 placeholder="支持直链图片或 MP4 视频"
@@ -162,14 +162,14 @@ const Settings: React.FC<SettingsProps> = ({ config, setConfig }) => {
                 <tr key={idx} className="hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
                   <td className="px-8 py-5">
                     <input 
-                      className="bg-transparent outline-none font-black text-blue-600 dark:text-blue-400 w-full"
+                      className="bg-transparent outline-none font-black text-blue-600 dark:text-blue-400 w-full font-tech"
                       value={path.label}
                       onChange={(e) => updatePath(idx, 'label', e.target.value)}
                     />
                   </td>
                   <td className="px-8 py-5">
                     <input 
-                      className="bg-transparent w-full outline-none font-mono text-slate-600 dark:text-slate-300"
+                      className="bg-transparent w-full outline-none text-slate-600 dark:text-slate-300 font-tech"
                       value={path.value}
                       onChange={(e) => updatePath(idx, 'value', e.target.value)}
                       placeholder="例如: uuid-or-path"
