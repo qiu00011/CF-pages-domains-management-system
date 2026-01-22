@@ -6,44 +6,23 @@
     <title>子怡云 - 综合管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 强制全局使用微软雅黑 */
         :root {
-            --ui-font: "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --primary: #2563eb;
+            --bg: #f1f5f9;
         }
-
-        * {
-            font-family: var(--ui-font) !important;
-        }
-
-        body { 
-            font-family: var(--ui-font);
-            margin: 0; 
-            padding: 0;
-            overflow: hidden; 
-            background-color: #f8fafc;
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            font-family: "Microsoft YaHei", -apple-system, sans-serif;
             color: #1e293b;
         }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+        .animate-in {
+            animation: fadeIn 0.3s ease-out;
         }
-        
-        .dark .glass {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
     </style>
     <script type="importmap">
 {
@@ -57,11 +36,13 @@
 }
 </script>
 </head>
-<body class="bg-slate-50">
+<body>
     <div id="root">
-        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold; color:#64748b; font-family:sans-serif;">
-            🚀 系统核心正在初始化...
+        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#64748b;">
+            正在载入系统资源...
         </div>
     </div>
+    <!-- 必须明确指向入口文件，并使用 type="module" -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>
