@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { UserConfig, Tab } from './types';
-import Sidebar from './components/Sidebar';
-import DomainManager from './components/DomainManager';
-import SubdomainGenerator from './components/SubdomainGenerator';
-import Settings from './components/Settings';
-import Login from './components/Login';
+import { UserConfig, Tab } from './types.ts';
+import Sidebar from './components/Sidebar.tsx';
+import DomainManager from './components/DomainManager.tsx';
+import SubdomainGenerator from './components/SubdomainGenerator.tsx';
+import Settings from './components/Settings.tsx';
+import Login from './components/Login.tsx';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -22,12 +22,13 @@ const App: React.FC = () => {
   const fetchConfig = useCallback(async () => {
     try {
       const resp = await fetch('/api/config');
+      if (!resp.ok) throw new Error('Network response was not ok');
       const data = await resp.json();
       if (data.success && data.config) {
         setConfig(data.config);
       }
     } catch (err) {
-      console.error("Config load error", err);
+      console.warn("无法加载配置，可能尚未初始化", err);
     }
   }, []);
 
@@ -52,7 +53,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden animate-fade-in relative z-10 max-md:flex-col font-bold">
+    <div className="flex h-screen w-screen overflow-hidden animate-fade-in relative z-10 max-md:flex-col">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -68,6 +69,19 @@ const App: React.FC = () => {
 
       {!config.backgroundUrl && (
         <div className="fixed inset-0 -z-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-950 dark:to-slate-900"></div>
+      )}
+      
+      {config.backgroundUrl && (
+        config.backgroundUrl.endsWith('.mp4') ? (
+          <video autoPlay loop muted className="fixed inset-0 -z-20 w-full h-full object-cover opacity-40 dark:opacity-20">
+            <source src={config.backgroundUrl} type="video/mp4" />
+          </video>
+        ) : (
+          <div 
+            className="fixed inset-0 -z-20 bg-cover bg-center opacity-40 dark:opacity-20"
+            style={{ backgroundImage: `url(${config.backgroundUrl})` }}
+          />
+        )
       )}
     </div>
   );

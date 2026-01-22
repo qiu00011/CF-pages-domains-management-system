@@ -7,11 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 
-           按照要求：强制全局使用微软雅黑 
-           杜绝任何外部字体加载，确保在没有任何网络延迟的情况下即刻显示
+           按照您的要求：首选微软雅黑，并优化系统字体栈
         */
         :root {
-            --ui-font: "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑", sans-serif;
+            --ui-font: "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         * {
@@ -62,10 +61,11 @@
 </head>
 <body class="bg-slate-50">
     <div id="root">
-        <!-- 初始加载提示，如果 React 没运行，这里会一直显示 -->
-        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold; color:#64748b;">
-            系统初始化中...
+        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold; color:#64748b; font-family:sans-serif;">
+            系统正在启动，请稍候...
         </div>
     </div>
+    <!-- 显式引入入口文件，确保浏览器知道去哪里加载业务逻辑 -->
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>
