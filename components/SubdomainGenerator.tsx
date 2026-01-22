@@ -32,18 +32,19 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
     const parent = config.parentDomain || 'hyeri.top';
     const fullSubdomain = `${prefix}.${parent}`;
     
-    const newResults = [
-      { label: '生成的随机子域名', value: fullSubdomain }
+    // 初始化结果列表，第一个始终是子域名本身
+    const newResults: Array<{ label: string, value: string }> = [
+      { label: '随机子域名', value: fullSubdomain }
     ];
 
-    // 关键修复: 检测配置中有几个 U 槽位，就生成几个对应的 URL
+    // 核心改进：检测配置中有几个 U 槽位，就生成几个对应的 URL
     if (config.paths && config.paths.length > 0) {
       config.paths.forEach(p => {
         // 如果用户没填路径值，默认使用标签名
-        const pathValue = p.value.trim() || p.label;
+        const pathSuffix = p.value.trim() || p.label;
         newResults.push({
-          label: `订阅链接 (${p.label})`,
-          value: `https://${fullSubdomain}/${pathValue}`
+          label: `订阅地址 (${p.label})`,
+          value: `https://${fullSubdomain}/${pathSuffix}`
         });
       });
     }
@@ -53,15 +54,15 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      alert('📋 已复制链接');
+      alert('📋 链接已复制');
     });
   };
 
   return (
     <div className="max-w-2xl mx-auto space-y-10 py-6 animate-fade-in">
       <div className="text-center space-y-3">
-        <h2 className="text-4xl font-black dark:text-white tracking-tight">随机域名调度系统</h2>
-        <p className="text-slate-500 font-medium">基于日期算法生成的唯一分发地址</p>
+        <h2 className="text-4xl font-black dark:text-white tracking-tight">随机域名分发系统</h2>
+        <p className="text-slate-500 font-medium">基于日期算法自动化生成的访问地址</p>
       </div>
 
       <div className="bg-white/40 dark:bg-white/5 p-10 rounded-[50px] border border-white/20 shadow-2xl space-y-8">
@@ -74,20 +75,20 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
         </div>
 
         <div className="space-y-4">
-          <label className="block text-sm font-black text-slate-700 dark:text-slate-300 pl-2">输入日期 (MM.DD)</label>
+          <label className="block text-sm font-black text-slate-700 dark:text-slate-300 pl-2">输入分发日期 (MM.DD)</label>
           <div className="flex gap-4">
             <input 
-              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[20px] px-6 py-5 outline-none text-2xl font-mono dark:text-white focus:ring-4 ring-blue-500/20 transition-all placeholder:opacity-30"
-              placeholder="08.15"
+              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[24px] px-6 py-5 outline-none text-2xl font-mono dark:text-white focus:ring-4 ring-blue-500/20 transition-all"
+              placeholder="例如 03.15"
               value={dateStr}
-              onChange={(e) => setDateStr(e.target.value)}
+              onChange={(e) => setDateStr((e.target as HTMLInputElement).value)}
               onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
             />
             <button 
               onClick={handleGenerate}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-10 rounded-[20px] font-black shadow-xl shadow-blue-500/30 active:scale-95 transition-all text-lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-10 rounded-[24px] font-black shadow-xl shadow-blue-500/30 active:scale-95 transition-all text-lg"
             >
-              生成
+              一键分发
             </button>
           </div>
         </div>
@@ -95,12 +96,12 @@ const SubdomainGenerator: React.FC<SubdomainGeneratorProps> = ({ config }) => {
         {results.length > 0 && (
           <div className="space-y-4 pt-8 border-t border-slate-100 dark:border-white/10 animate-fade-in">
             <div className="flex items-center justify-between px-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">解析输出列表</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">分发结果列表</label>
               <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 px-3 py-1 rounded-full">已就绪</span>
             </div>
             <div className="space-y-3">
               {results.map((res, i) => (
-                <div key={i} className="group p-5 bg-white/80 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-[24px] flex items-center justify-between hover:border-blue-400/50 transition-all shadow-sm">
+                <div key={i} className="group p-5 bg-white/80 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-[28px] flex items-center justify-between hover:border-blue-400/50 transition-all shadow-sm">
                   <div className="flex flex-col gap-1 overflow-hidden pr-4">
                     <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{res.label}</span>
                     <span className="text-base font-mono truncate dark:text-slate-100 font-medium">{res.value}</span>
