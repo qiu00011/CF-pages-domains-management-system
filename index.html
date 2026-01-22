@@ -7,41 +7,38 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 
-           按照用户要求：首选微软雅黑 (Microsoft YaHei)，
-           结合仿苹果系统字体栈，确保在 Windows 和 Mac 上都拥有极致的清晰度和美感。
-           不依赖任何外部字体文件，杜绝资源加载失败导致的空白页。
+           按照您的要求，强制使用“微软雅黑”作为第一优先级字体。
+           同时保留苹方作为 Mac 端的优雅回退，确保全平台不出现字体加载导致的空白。
         */
         :root {
-            --ui-font: "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --ui-font: "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body { 
             font-family: var(--ui-font);
             margin: 0; 
+            padding: 0;
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
             background-color: #f8fafc;
         }
 
-        /* 统一使用雅黑 UI 栈 */
-        .font-tech {
+        /* 强制所有组件应用雅黑字体 */
+        * {
             font-family: var(--ui-font) !important;
-            font-weight: 700;
-            letter-spacing: -0.01em;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
         
         .dark .glass {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         #custom-bg-layer {
@@ -49,25 +46,21 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -10;
             object-fit: cover;
-            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 1s ease;
         }
 
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(8px); } 
+            from { opacity: 0; transform: translateY(10px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-        .dark .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
         
         input, select, button {
             font-family: inherit;
         }
-
-        .font-black { font-weight: 900; }
-        .font-bold { font-weight: 700; }
     </style>
     <script type="importmap">
 {
@@ -83,7 +76,10 @@
 </head>
 <body class="bg-slate-50 text-slate-900 transition-colors duration-500">
     <div id="root"></div>
-    <!-- 移除 ./ 前缀，部分部署环境对模块路径非常敏感，这有助于解决 MIME 类型 application/octet-stream 导致的加载失败 -->
-    <script type="module" src="index.tsx"></script>
+    <!-- 
+      注意：根据系统规范，index.tsx 会被自动导入。
+      如果手动在这里写 <script src="index.tsx">，浏览器会直接去抓取原始代码，
+      导致报错 application/octet-stream。现在已移除手动标签，交由系统自动挂载。
+    -->
 </body>
 </html>
