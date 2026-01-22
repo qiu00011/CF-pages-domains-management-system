@@ -6,13 +6,13 @@
     <title>子怡云 - 综合管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 极致简约的 Apple 系统字体栈，确保在任何 Apple 设备上拥有原生高级感 */
+        /* 字体栈：优先苹果苹方，次选 Windows 微软雅黑 */
         :root {
-            --apple-font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", "Inter", "Microsoft YaHei", sans-serif;
+            --ui-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
         body { 
-            font-family: var(--apple-font);
+            font-family: var(--ui-font);
             margin: 0; 
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
@@ -21,22 +21,22 @@
             background-color: #f8fafc;
         }
 
-        /* 针对域名和数字，不再使用 Mono 字体，改为加粗和略微紧凑的字间距来模拟“技术感” */
+        /* 统一字体，移除 Mono 依赖 */
         .font-tech {
-            font-family: var(--apple-font) !important;
+            font-family: var(--ui-font) !important;
             font-weight: 700;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.72);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
         
         .dark .glass {
-            background: rgba(30, 41, 59, 0.75);
+            background: rgba(15, 23, 42, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -45,11 +45,11 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -10;
             object-fit: cover;
-            transition: opacity 1.2s ease;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
+            from { opacity: 0; transform: translateY(8px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
         .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -61,6 +61,10 @@
         input, select, button {
             font-family: inherit;
         }
+
+        /* 针对 Windows 微软雅黑字重的微调 */
+        .font-black { font-weight: 900; }
+        .font-bold { font-weight: 700; }
     </style>
     <script type="importmap">
 {
@@ -76,7 +80,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900 transition-colors duration-500">
     <div id="root"></div>
-    <!-- 尝试移除路径前的 ./ 以匹配某些环境的模块解析逻辑 -->
-    <script type="module" src="index.tsx"></script>
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>
