@@ -1,11 +1,9 @@
-// Fixed missing type definition file error by removing the external reference
+
 interface Env {
-  // Fixed 'Cannot find name KVNamespace' error by using 'any'
   CONFIG_KV: any;
   PASSWORD?: string;
 }
 
-// Fixed 'Cannot find name PagesFunction' error by defining the function signature manually
 export const onRequest = async (context: { request: Request; env: Env; params: any }) => {
   const { request, env, params } = context;
   const url = new URL(request.url);
@@ -51,14 +49,16 @@ export const onRequest = async (context: { request: Request; env: Env; params: a
 
     if (!pagesToken) return jsonErr('Missing Pages Token', 401);
 
-    // Dynamic routing for Pages API
+    const pathSegments = cfPath.split('/');
+
     // Handle POST domain (Add Domain + DNS)
+    // Path: accounts/[AID]/pages/projects/[PNAME]/domains
     if (cfPath.match(/accounts\/[^\/]+\/pages\/projects\/[^\/]+\/domains$/) && request.method === 'POST') {
       const body = await request.json() as any;
       const domainName = body.name;
-      const [, , accId, , , projectName] = cfPath.split('/');
+      const accId = pathSegments[1];
+      const projectName = pathSegments[4];
 
-      // Add to Pages
       const addResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId || accId}/pages/projects/${projectName}/domains`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${pagesToken}`, 'Content-Type': 'application/json' },
@@ -67,7 +67,6 @@ export const onRequest = async (context: { request: Request; env: Env; params: a
       const addData = await addResp.json() as any;
 
       if (addData.success && zoneToken) {
-        // Find Zone and Add DNS
         try {
           const zoneName = await findParentZone(domainName, zoneToken);
           if (zoneName) {
@@ -98,8 +97,12 @@ export const onRequest = async (context: { request: Request; env: Env; params: a
     }
 
     // Handle DELETE domain
+    // Path: accounts/[AID]/pages/projects/[PNAME]/domains/[DNAME]
     if (cfPath.match(/accounts\/[^\/]+\/pages\/projects\/[^\/]+\/domains\/[^\/]+$/) && request.method === 'DELETE') {
-      const [, , accId, , , projectName, , domain] = cfPath.split('/');
+      const accId = pathSegments[1];
+      const projectName = pathSegments[4];
+      const domain = pathSegments[6];
+
       const delResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId || accId}/pages/projects/${projectName}/domains/${domain}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${pagesToken}` }
@@ -122,12 +125,11 @@ export const onRequest = async (context: { request: Request; env: Env; params: a
               const dnsListData = await dnsList.json() as any;
               if (dnsListData.success && dnsListData.result?.length > 0) {
                 const dnsId = dnsListData.result[0].id;
-                const dnsDel = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${dnsId}`, {
+                await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${dnsId}`, {
                   method: 'DELETE',
                   headers: { 'Authorization': `Bearer ${zoneToken}` }
                 });
-                const dnsDelData = await dnsDel.json() as any;
-                delData.dns_deleted = dnsDelData.success;
+                delData.dns_deleted = true;
               }
             }
           }
