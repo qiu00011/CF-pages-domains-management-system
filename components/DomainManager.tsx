@@ -34,7 +34,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
         addLog(`获取到 ${data.result.length} 个项目`);
       }
     } catch (err) {
-      addLog(`请求异常: ${err}`);
+      addLog(`连接请求异常: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const fetchDomains = async (projName: string) => {
     if (!projName) return;
     setLoading(true);
-    addLog(`拉取项目 [${projName}] 的解析数据...`);
+    addLog(`正在读取项目 [${projName}] 的解析列表...`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${projName}/domains`, {
         headers: { 'X-Pages-Token': config.pagesToken, 'X-Account-Id': config.accountId }
@@ -51,10 +51,10 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       const data = await resp.json();
       if (data.success) {
         setDomains(data.result);
-        addLog("列表刷新成功");
+        addLog("列表同步成功");
       }
     } catch (err) {
-      addLog(`同步失败: ${err}`);
+      addLog(`拉取域名失败: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const addDomain = async () => {
     if (!newDomain || !selectedProject) return;
     setLoading(true);
-    addLog(`下发绑定任务: ${newDomain}`);
+    addLog(`准备执行绑定: ${newDomain}`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains`, {
         method: 'POST',
@@ -77,14 +77,14 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       });
       const data = await resp.json();
       if (data.success) {
-        addLog(`✅ 域名绑定成功`);
+        addLog(`✅ 解析绑定任务已完成`);
         setNewDomain('');
         fetchDomains(selectedProject);
       } else {
-        addLog(`❌ 绑定失败: ${data.errors?.[0]?.message || 'API 限制'}`);
+        addLog(`❌ 绑定失败: ${data.errors?.[0]?.message || 'API 请求被拒'}`);
       }
     } catch (err) {
-      addLog(`⚠️ 网络错误: ${err}`);
+      addLog(`⚠️ 异常中断: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const removeDomain = async (domainName: string) => {
     if (!confirm(`确定要移除 ${domainName} 吗？`)) return;
     setLoading(true);
-    addLog(`注销解析: ${domainName}`);
+    addLog(`正在申请注销解析: ${domainName}`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains/${domainName}`, {
         method: 'DELETE',
@@ -105,11 +105,11 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       });
       const data = await resp.json();
       if (data.success) {
-        addLog(`✅ 解析已彻底注销`);
+        addLog(`✅ 域名已从 Pages 项目中移除`);
         fetchDomains(selectedProject);
       }
     } catch (err) {
-      addLog(`⚠️ 异常: ${err}`);
+      addLog(`⚠️ 注销异常: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -123,34 +123,34 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-3xl font-black dark:text-white tracking-tighter">域名控制</h2>
-          <p className="text-slate-500 text-sm font-bold opacity-70 italic">Cloudflare Pages 实时调度系统</p>
+          <p className="text-slate-500 text-sm font-bold opacity-70">Cloudflare Pages 调度核心</p>
         </div>
         <button 
           onClick={fetchProjects}
           className="px-6 py-3 bg-white/50 dark:bg-white/10 rounded-2xl text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest border border-white/20 shadow-sm"
         >
-          刷新状态
+          刷新云端状态
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
           <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">选定工作项目</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">当前操作项目</label>
             <div className="relative">
                 <select 
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-bold text-base shadow-inner appearance-none"
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
                 >
-                {projects.map(p => <option key={p.name} value={p.name} className="font-bold">{p.name}</option>)}
+                {projects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
                 </select>
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">▼</div>
             </div>
           </div>
 
           <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">快速绑定域名</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">下发绑定指令</label>
             <div className="flex gap-4">
               <input 
                 className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-bold text-lg shadow-inner focus:ring-4 ring-blue-500/10 transition-all"
@@ -163,14 +163,14 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
                 disabled={loading || !newDomain}
                 className="bg-blue-600 text-white px-8 rounded-2xl font-black hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
               >
-                下发
+                立即绑定
               </button>
             </div>
           </div>
         </div>
 
         <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 min-h-[350px] flex flex-col shadow-sm">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 pl-1">活动解析库</label>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 pl-1">活跃解析列表</label>
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scroll">
             {domains.map(d => (
               <div key={d.name} className="flex items-center justify-between p-6 bg-white/80 dark:bg-black/40 rounded-[32px] border border-slate-100 dark:border-white/5 shadow-sm group hover:border-blue-500/40 transition-all">
@@ -199,9 +199,9 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       </div>
 
       <div className="space-y-4">
-        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-4">系统吞吐日志</label>
+        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-4">系统吞吐流水</label>
         <div className="bg-black/90 text-emerald-400 p-8 rounded-[40px] text-[11px] h-48 overflow-y-auto shadow-2xl border border-white/5 custom-scroll leading-relaxed font-bold">
-          {logs.map((log, i) => <div key={i} className="mb-1.5 opacity-80"><span className="text-slate-600 mr-2">»</span>{log}</div>)}
+          {logs.map((log, i) => <div key={i} className="mb-1.5 opacity-80 font-tech"><span className="text-slate-600 mr-2">»</span>{log}</div>)}
           {logs.length === 0 && <div className="text-slate-800 italic">SYSTEM IDLE...</div>}
         </div>
       </div>

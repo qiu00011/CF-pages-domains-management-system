@@ -6,7 +6,12 @@
     <title>子怡云 - 综合管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 字体栈：优先苹果苹方，次选 Windows 微软雅黑 */
+        /* 
+           极致兼容字体栈：
+           1. 优先调用 Mac/iOS 的原生苹方 (PingFang SC)
+           2. 其次调用 Windows 的微软雅黑 (Microsoft YaHei)
+           3. 确保在不同平台上都有“仿苹果”的细腻感
+        */
         :root {
             --ui-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
@@ -18,10 +23,10 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
-            background-color: #f8fafc;
+            background-color: #f0f2f5;
         }
 
-        /* 统一字体，移除 Mono 依赖 */
+        /* 统一字体，移除所有对 Mono/JetBrains 的引用，全部回归微软雅黑/苹方 */
         .font-tech {
             font-family: var(--ui-font) !important;
             font-weight: 700;
@@ -30,14 +35,14 @@
 
         .glass {
             background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(25px) saturate(200%);
-            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
         
         .dark .glass {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(20, 30, 50, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         #custom-bg-layer {
@@ -45,14 +50,14 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -10;
             object-fit: cover;
-            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(8px); } 
+            from { opacity: 0; transform: translateY(10px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
-        .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
@@ -62,7 +67,7 @@
             font-family: inherit;
         }
 
-        /* 针对 Windows 微软雅黑字重的微调 */
+        /* 增强雅黑在 UI 中的表现 */
         .font-black { font-weight: 900; }
         .font-bold { font-weight: 700; }
     </style>
@@ -78,8 +83,9 @@
 }
 </script>
 </head>
-<body class="bg-slate-50 text-slate-900 transition-colors duration-500">
+<body class="transition-colors duration-500">
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <!-- 去掉 ./ 前缀，部分环境在处理 TSX 模块时对绝对路径与相对路径的 MIME 映射更敏感 -->
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>
