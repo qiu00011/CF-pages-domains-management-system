@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tab } from '../types.ts';
 
@@ -19,10 +18,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDarkMode, 
   return (
     <div className="w-64 glass m-4 mr-0 rounded-3xl p-6 flex flex-col shadow-xl">
       <div className="flex items-center gap-3 mb-10">
-        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
-          CF
-        </div>
-        <h1 className="font-semibold text-lg dark:text-white">Pages Hub</h1>
+        <img 
+          src="https://image.hyeri.us.kg/icon.png" 
+          alt="Logo" 
+          className="w-10 h-10 rounded-xl shadow-lg object-cover" 
+        />
+        <h1 className="font-bold text-lg dark:text-white tracking-tight">子怡vpn面板</h1>
       </div>
 
       <nav className="flex-1 space-y-2">
@@ -49,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDarkMode, 
         >
           {isDarkMode ? '🌙' : '☀️'}
         </button>
-        <span className="text-xs text-slate-400">v2.0 Stable</span>
+        <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">v2.2 Stable</span>
       </div>
     </div>
   );
