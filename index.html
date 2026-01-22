@@ -1,19 +1,15 @@
 
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>子怡vpn面板 - 综合管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* 全局字体：文字优先使用 Apple 系统字体 */
+        /* 统一使用 Apple 系统字体栈，确保中西文排版优雅 */
         :root {
             --apple-font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --google-tech-font: 'JetBrains Mono', monospace;
         }
 
         body { 
@@ -25,10 +21,11 @@
             text-rendering: optimizeLegibility;
         }
 
-        /* 专门用于域名、数字、代码的 Google 风格技术字体 */
+        /* 重置技术类字体为 Apple 字体，仅通过加粗或字间距区分数据，不再使用 Mono */
         .font-tech {
-            font-family: var(--google-tech-font) !important;
-            letter-spacing: -0.02em;
+            font-family: var(--apple-font) !important;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .glass {
@@ -70,7 +67,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900 transition-colors duration-500">
     <div id="root"></div>
-    <!-- 修复白屏的关键入口脚本 -->
     <script type="module" src="./index.tsx"></script>
 </body>
 </html>

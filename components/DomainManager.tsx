@@ -144,11 +144,11 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">当前工作项目</label>
             <div className="relative">
                 <select 
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-black text-base shadow-inner appearance-none font-tech"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-black text-base shadow-inner appearance-none"
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
                 >
-                {projects.map(p => <option key={p.name} value={p.name} className="font-tech">{p.name}</option>)}
+                {projects.map(p => <option key={p.name} value={p.name} className="font-semibold">{p.name}</option>)}
                 </select>
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">▼</div>
             </div>
@@ -158,7 +158,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 pl-1">绑定新解析</label>
             <div className="flex gap-4">
               <input 
-                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-tech text-lg shadow-inner focus:ring-4 ring-blue-500/10 transition-all"
+                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-5 outline-none dark:text-white font-semibold text-lg shadow-inner focus:ring-4 ring-blue-500/10 transition-all"
                 placeholder="v2.domain.com"
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
@@ -180,7 +180,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
             {domains.map(d => (
               <div key={d.name} className="flex items-center justify-between p-6 bg-white/80 dark:bg-black/40 rounded-[32px] border border-slate-100 dark:border-white/5 shadow-sm group hover:border-blue-500/40 transition-all">
                 <div className="flex flex-col">
-                  <span className="font-black text-base dark:text-white font-tech tracking-tight">{d.name}</span>
+                  <span className="font-bold text-base dark:text-white tracking-tight">{d.name}</span>
                   <div className="flex items-center gap-2 mt-1.5">
                       <span className={`w-2 h-2 rounded-full ${d.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-orange-400 animate-pulse'}`}></span>
                       <span className={`text-[9px] uppercase font-black tracking-widest ${d.status === 'active' ? 'text-emerald-500' : 'text-orange-400'}`}>
@@ -202,9 +202,9 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
 
       <div className="space-y-4">
         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-4">Trace Terminal</label>
-        <div className="bg-black/90 text-emerald-400 p-8 rounded-[40px] font-tech text-[11px] h-48 overflow-y-auto shadow-2xl border border-white/5 custom-scroll leading-relaxed">
+        <div className="bg-black/90 text-emerald-400 p-8 rounded-[40px] text-[11px] h-48 overflow-y-auto shadow-2xl border border-white/5 custom-scroll leading-relaxed font-semibold">
           {logs.map((log, i) => <div key={i} className="mb-1.5 opacity-80"><span className="text-slate-600 mr-2">»</span>{log}</div>)}
-          {logs.length === 0 && <div className="text-slate-800 italic font-tech">SYSTEM IDLE...</div>}
+          {logs.length === 0 && <div className="text-slate-800 italic">SYSTEM IDLE...</div>}
         </div>
       </div>
     </div>
