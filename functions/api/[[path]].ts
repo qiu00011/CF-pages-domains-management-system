@@ -52,14 +52,15 @@ export const onRequest = async (context: { request: Request; env: Env; params: a
     const pathSegments = cfPath.split('/');
 
     // Handle POST domain (Add Domain + DNS)
-    // Path: accounts/[AID]/pages/projects/[PNAME]/domains
     if (cfPath.match(/accounts\/[^\/]+\/pages\/projects\/[^\/]+\/domains$/) && request.method === 'POST') {
       const body = await request.json() as any;
       const domainName = body.name;
       const accId = pathSegments[1];
       const projectName = pathSegments[4];
+      const targetAccountId = accountId || accId;
 
-      const addResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId || accId}/pages/projects/${projectName}/domains`, {
+      // 1. Add Domain to Pages Project
+      const addResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${targetAccountId}/pages/projects/${projectName}/domains`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${pagesToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: domainName })
@@ -68,6 +69,15 @@ export const onRequest = async (context: { request: Request; env: Env; params: a
 
       if (addData.success && zoneToken) {
         try {
+          // 2. Fetch Project Details to get ACTUAL subdomain (e.g., xxx.pages.dev)
+          const projectResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${targetAccountId}/pages/projects/${projectName}`, {
+            headers: { 'Authorization': `Bearer ${pagesToken}` }
+          });
+          const projectData = await projectResp.json() as any;
+          
+          // Use result.subdomain if available, fallback to projectName.pages.dev
+          const cnameTarget = projectData.success ? projectData.result.subdomain : `${projectName}.pages.dev`;
+
           const zoneName = await findParentZone(domainName, zoneToken);
           if (zoneName) {
             const zonesResp = await fetch(`https://api.cloudflare.com/client/v4/zones?name=${zoneName}`, {
@@ -82,22 +92,24 @@ export const onRequest = async (context: { request: Request; env: Env; params: a
                 body: JSON.stringify({
                   type: 'CNAME',
                   name: domainName,
-                  content: `${projectName}.pages.dev`,
+                  content: cnameTarget,
                   proxied: true,
                   ttl: 1
                 })
               });
               const dnsData = await dnsResp.json() as any;
               addData.dns_created = dnsData.success;
+              addData.cname_target = cnameTarget;
             }
           }
-        } catch (e) {}
+        } catch (e) {
+            addData.dns_error = e.message;
+        }
       }
       return new Response(JSON.stringify(addData), { headers: { 'Content-Type': 'application/json' } });
     }
 
     // Handle DELETE domain
-    // Path: accounts/[AID]/pages/projects/[PNAME]/domains/[DNAME]
     if (cfPath.match(/accounts\/[^\/]+\/pages\/projects\/[^\/]+\/domains\/[^\/]+$/) && request.method === 'DELETE') {
       const accId = pathSegments[1];
       const projectName = pathSegments[4];

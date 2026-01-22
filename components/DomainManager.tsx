@@ -21,7 +21,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const fetchProjects = async () => {
     if (!config.accountId || !config.pagesToken) return;
     setLoading(true);
-    addLog("正在获取项目列表...");
+    addLog("正在获取 Cloudflare 项目列表...");
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects`, {
         headers: { 'X-Pages-Token': config.pagesToken, 'X-Account-Id': config.accountId }
@@ -32,7 +32,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
         if (data.result.length > 0 && !selectedProject) {
           setSelectedProject(data.result[0].name);
         }
-        addLog("项目列表获取完成");
+        addLog(`成功获取 ${data.result.length} 个项目`);
       }
     } catch (err) {
       addLog(`错误: ${err}`);
@@ -44,7 +44,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const fetchDomains = async (projName: string) => {
     if (!projName) return;
     setLoading(true);
-    addLog(`正在获取 ${projName} 的域名...`);
+    addLog(`正在刷新项目 [${projName}] 的自定义域名...`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${projName}/domains`, {
         headers: { 'X-Pages-Token': config.pagesToken, 'X-Account-Id': config.accountId }
@@ -64,7 +64,7 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   const addDomain = async () => {
     if (!newDomain || !selectedProject) return;
     setLoading(true);
-    addLog(`尝试添加域名 ${newDomain}...`);
+    addLog(`准备添加域名 ${newDomain} 到项目 ${selectedProject}...`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains`, {
         method: 'POST',
@@ -78,23 +78,28 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       });
       const data = await resp.json();
       if (data.success) {
-        addLog(`域名添加成功: ${data.dns_created ? 'DNS记录已同步' : '需手动配置DNS'}`);
+        addLog(`✅ 域名添加成功！`);
+        if (data.dns_created) {
+          addLog(`🚀 DNS CNAME 记录已自动创建，指向目标: ${data.cname_target}`);
+        } else {
+          addLog(`⚠️ DNS 记录未自动创建，请检查 Zone Token 权限或手动添加`);
+        }
         setNewDomain('');
         fetchDomains(selectedProject);
       } else {
-        addLog(`失败: ${JSON.stringify(data.errors)}`);
+        addLog(`❌ 失败: ${data.errors?.[0]?.message || JSON.stringify(data.errors)}`);
       }
     } catch (err) {
-      addLog(`异常: ${err}`);
+      addLog(`⚠️ 异常: ${err}`);
     } finally {
       setLoading(false);
     }
   };
 
   const removeDomain = async (domainName: string) => {
-    if (!confirm(`确定要移除域名 ${domainName} 吗？`)) return;
+    if (!confirm(`确定要移除域名 ${domainName} 吗？\n系统将尝试同步清理对应的 DNS 记录。`)) return;
     setLoading(true);
-    addLog(`正在移除 ${domainName}...`);
+    addLog(`正在移除域名 ${domainName}...`);
     try {
       const resp = await fetch(`/api/cf/accounts/${config.accountId}/pages/projects/${selectedProject}/domains/${domainName}`, {
         method: 'DELETE',
@@ -106,11 +111,12 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
       });
       const data = await resp.json();
       if (data.success) {
-        addLog(`移除成功: ${data.dns_deleted ? 'DNS记录已清理' : 'DNS需手动处理'}`);
+        addLog(`✅ ${domainName} 已成功从项目中断开`);
+        if (data.dns_deleted) addLog(`🗑️ 相关的 DNS 记录已自动清理`);
         fetchDomains(selectedProject);
       }
     } catch (err) {
-      addLog(`异常: ${err}`);
+      addLog(`⚠️ 异常: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -125,78 +131,84 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
   }, [selectedProject]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-bold dark:text-white">Cloudflare Pages 控制台</h2>
-          <p className="text-slate-500 text-sm">管理您的 Pages 项目和自定义域名</p>
+          <h2 className="text-3xl font-black dark:text-white tracking-tight">域名控制</h2>
+          <p className="text-slate-500 text-sm font-medium">绑定与管理 Pages 自定义域名解析</p>
         </div>
         <button 
           onClick={fetchProjects}
-          className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm hover:bg-slate-200 transition-colors dark:text-white"
+          className="px-6 py-3 bg-white/50 dark:bg-white/10 rounded-2xl text-xs font-black hover:bg-white transition-all dark:text-white border border-white/20 shadow-sm"
         >
-          刷新数据
+          同步云端数据
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Project Selector & Add Domain */}
-        <div className="space-y-4">
-          <div className="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">选择项目</label>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">当前操作项目</label>
             <select 
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4 outline-none dark:text-white font-bold text-sm shadow-inner appearance-none"
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
             >
-              {projects.length === 0 && <option value="">-- 请先获取项目 --</option>}
+              {projects.length === 0 && <option value="">-- 请先同步数据 --</option>}
               {projects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
             </select>
           </div>
 
-          <div className="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">快捷添加域名</label>
-            <div className="flex gap-2">
+          <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 shadow-sm">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">快速绑定新域名</label>
+            <div className="flex gap-3">
               <input 
-                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none dark:text-white"
-                placeholder="sub.example.com"
+                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4 outline-none dark:text-white font-mono text-sm shadow-inner"
+                placeholder="例如 v2.hyeri.us.kg"
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addDomain()}
               />
               <button 
                 onClick={addDomain}
                 disabled={loading || !newDomain}
-                className="bg-blue-600 text-white px-6 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition-all"
+                className="bg-blue-600 text-white px-10 rounded-2xl font-black hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
               >
                 添加
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 mt-2">* 自动配置匹配 Zone 的 CNAME 记录（如有权限）</p>
+            <p className="text-[10px] text-slate-400 mt-4 font-bold flex items-center gap-2 px-1">
+                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                系统将自动通过 API 解析到项目的 subdomain 域名
+            </p>
           </div>
         </div>
 
-        {/* Domain List */}
-        <div className="p-5 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20 min-h-[300px] flex flex-col">
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">当前已绑定域名</label>
-          <div className="flex-1 overflow-y-auto space-y-2 max-h-[250px] pr-2">
+        <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[40px] border border-white/20 min-h-[350px] flex flex-col shadow-sm">
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5 px-1">已绑定的解析列表</label>
+          <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scroll">
             {domains.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center opacity-30 italic">
-                <span>无数据</span>
+              <div className="h-full flex flex-col items-center justify-center opacity-20 italic">
+                <span className="text-4xl mb-4">☁️</span>
+                <span className="text-sm">暂无自定义解析数据</span>
               </div>
             ) : (
               domains.map(d => (
-                <div key={d.name} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-white/5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm dark:text-white">{d.name}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      d.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {d.status === 'active' ? '在线' : '等待验证'}
-                    </span>
+                <div key={d.name} className="flex items-center justify-between p-5 bg-white/80 dark:bg-black/30 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm group hover:border-blue-500/30 transition-all">
+                  <div className="flex flex-col">
+                    <span className="font-black text-sm dark:text-white font-mono">{d.name}</span>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${d.status === 'active' ? 'bg-emerald-500' : 'bg-orange-400'}`}></span>
+                        <span className={`text-[9px] uppercase font-black tracking-widest ${
+                        d.status === 'active' ? 'text-emerald-500' : 'text-orange-400'
+                        }`}>
+                        {d.status === 'active' ? '已激活' : '验证中'}
+                        </span>
+                    </div>
                   </div>
                   <button 
                     onClick={() => removeDomain(d.name)}
-                    className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors text-xs"
+                    className="text-red-400 hover:text-red-600 p-3 rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10"
                   >
                     断开
                   </button>
@@ -207,12 +219,11 @@ const DomainManager: React.FC<DomainManagerProps> = ({ config }) => {
         </div>
       </div>
 
-      {/* Terminal Logs */}
-      <div className="space-y-2">
-        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">系统日志</label>
-        <div className="bg-slate-900 text-emerald-400 p-4 rounded-2xl font-mono text-xs h-32 overflow-y-auto shadow-inner border border-white/5">
-          {logs.map((log, i) => <div key={i} className="mb-1 leading-relaxed">{log}</div>)}
-          {logs.length === 0 && <div className="text-slate-600">等待操作...</div>}
+      <div className="space-y-3">
+        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">系统执行轨迹 (Terminal Logs)</label>
+        <div className="bg-slate-950 text-emerald-400 p-6 rounded-[32px] font-mono text-[10px] h-40 overflow-y-auto shadow-2xl border border-white/5 custom-scroll leading-relaxed">
+          {logs.map((log, i) => <div key={i} className="mb-1 opacity-90">{log}</div>)}
+          {logs.length === 0 && <div className="text-slate-700 italic">等待系统指令下达...</div>}
         </div>
       </div>
     </div>
